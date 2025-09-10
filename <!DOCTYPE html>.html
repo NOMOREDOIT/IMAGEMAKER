@@ -1,0 +1,2070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Image Maker Studio</title>
+<link rel="icon" type="image/png" href="favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Indie+Flower&family=Londrina+Outline&family=Patua+One&family=Pixelify+Sans&family=Press+Start+2P&family=Roboto:wght@400;700&family=Rubik+Mono+One&family=Young+Serif&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal/dist/browser.js"></script>
+<style>
+/* --- In-Window Loading Overlay Styles --- */
+#loading-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background-color:#faf9f5;color:#2b2b2b;display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s ease-in-out}#loading-overlay h1{font-family:'VT323',monospace;font-size:2.5rem;text-shadow:2px 2px 0 #000}#loading-overlay h1::after{content:'.';display:inline-block;width:3ch;text-align:left;animation:ellipsis 1.4s infinite}:root{--bg:#f2efe8;--ink:#2b2b2b;--mid:#c2c2c2;--light:#faf9f5;--light-rgb:250,249,245;--shadow:#7a7a7a;--danger-color:#cc4444;--action-color:#4477cc;--success-color:#55cc55;--bg-rgb:242,39,232;--action-color-rgb:68,119,204}html{box-sizing:border-box}*,:before,:after{box-sizing:inherit}body{font-family:'VT323',monospace;background:var(--bg) url(./assets/wallpaper.png) repeat fixed;color:var(--ink);display:flex;flex-direction:column;align-items:center;padding:10px;margin:0;height:100vh;overflow:hidden;transition:background-color .3s,color .3s}body.dark-mode{--bg:#1a1d2d;--ink:#e0e5f0;--mid:#3d4a6e;--light:#252a40;--light-rgb:37,42,64;--shadow:#0d0f16;--danger-color:#a83e3e;--action-color:#5a8de8;--success-color:#4a9d4a;--bg-rgb:26,29,45;--action-color-rgb:90,141,232}.window{position:relative;background:var(--light);border:2px solid var(--ink);box-shadow:4px 4px 0 var(--ink);width:100%;max-width:1600px;margin:0 auto;height:calc(100vh - 20px);display:flex;flex-direction:column;overflow:hidden;transition:background-color .3s,border-color .3s,box-shadow .3s}.titlebar{height:28px;background:var(--mid);display:flex;align-items:center;justify-content:space-between;padding:0 8px;border-bottom:2px solid var(--ink);font-size:20px;flex-shrink:0;cursor:default;position:relative;transition:background-color .3s,border-color .3s}body.dark-mode .titlebar{color:var(--ink)}.titlebar-controls{display:flex;align-items:center;gap:8px}.controls-fake{display:flex;gap:4px}.btn-square{width:16px;height:16px;background:var(--light);border:2px solid var(--ink)}.controls-fake .btn-square:first-child{background-color:var(--success-color)}.controls-fake .btn-square:last-child{background-color:var(--danger-color)}#shortcuts-btn,#visuals-btn,#text-btn,#theme-toggle-btn,#toggle-view-btn,#background-remover-btn, #erase-tool-btn{font-family:inherit;font-size:16px;background:var(--light);border:2px solid var(--ink);padding:0 8px;cursor:pointer;transition:background-color .3s,border-color .3s,color .3s;color:var(--ink)}#theme-toggle-btn,#toggle-view-btn{padding:0 4px;font-size:18px}#shortcuts-dropdown{right:8px}#shortcuts-dropdown.visible{display:block}#shortcuts-dropdown h5{margin:0 0 .5rem 0;font-size:1.2rem;text-align:center}#shortcuts-dropdown ul{margin:0;padding:0;list-style:none;font-size:1rem}#shortcuts-dropdown li{display:flex;justify-content:space-between;padding:2px 0}#shortcuts-dropdown li kbd{font-family:inherit;border:2px solid var(--ink);padding:0 4px;background:var(--bg)}#visuals-dropdown,#text-dropdown,#shortcuts-dropdown, #background-remover-dropdown, #erase-tool-dropdown{display:none;position:absolute;top:28px;background:rgba(var(--light-rgb),.3);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:2px solid var(--ink);box-shadow:4px 4px 0 var(--ink);padding:.5rem 1rem;z-index:100;width:250px;transition:background .2s,backdrop-filter .2s,box-shadow .2s,border-color .2s}body.dark-mode #shortcuts-dropdown li kbd{border-color:var(--mid)}#visuals-dropdown{right:438px}#background-remover-dropdown{right:328px}#erase-tool-dropdown{right:220px}#text-dropdown{right:124px}#visuals-dropdown.visible,#text-dropdown.visible, #background-remover-dropdown.visible, #erase-tool-dropdown.visible{display:block}#visuals-dropdown h5,#visuals-dropdown h6,#visuals-dropdown .slider-container,#text-dropdown h5,#text-dropdown h6,#text-dropdown .slider-container, #background-remover-dropdown h5, #erase-tool-dropdown h5, #erase-tool-dropdown h6, #erase-tool-dropdown .eraser-mode-controls, #erase-tool-dropdown > .mg-btn{transition:opacity .2s}#visuals-dropdown h5,#text-dropdown h5, #background-remover-dropdown h5, #erase-tool-dropdown h5{margin:0 0 .5rem 0;font-size:1.2rem;text-align:center}#visuals-dropdown h6,#text-dropdown h6, #erase-tool-dropdown h6{font-size:1.1rem;font-weight:700;text-align:left;margin-top:.5rem;margin-bottom:.5rem;border-bottom:2px solid var(--mid);padding-bottom:2px}#visuals-dropdown label,#text-dropdown label, #erase-tool-dropdown label{display:block;margin-top:.5rem;font-size:.9rem}
+#visuals-dropdown.is-scrubbing,#text-dropdown.is-scrubbing,#erase-tool-dropdown.is-scrubbing{background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;border-color:transparent}
+#visuals-dropdown.is-scrubbing>h5,#visuals-dropdown.is-scrubbing>div>h6,#visuals-dropdown.is-scrubbing .slider-container{opacity:0;pointer-events:none}
+#visuals-dropdown.is-scrubbing .slider-container.is-active-slider{opacity:1;pointer-events:auto}
+#text-dropdown.is-scrubbing > h5,#text-dropdown.is-scrubbing #text-layer-manager,#text-dropdown.is-scrubbing .slider-container {opacity: 0;pointer-events: none;}
+#text-dropdown.is-scrubbing .slider-container.is-active-slider {opacity: 1;pointer-events: auto;}
+#erase-tool-dropdown.is-scrubbing>h5,#erase-tool-dropdown.is-scrubbing .eraser-mode-selector,#erase-tool-dropdown.is-scrubbing #eraser-controls-wrapper{opacity:0;pointer-events:none}
+#erase-tool-dropdown.is-scrubbing #eraser-controls-wrapper.is-active-slider{opacity:1;pointer-events:auto}
+#visuals-dropdown input[type=range],#text-dropdown input[type=range], #erase-tool-dropdown input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:2px;background:var(--ink);outline:0}#visuals-dropdown input[type=range]::-webkit-slider-thumb,#text-dropdown input[type=range]::-webkit-slider-thumb, #erase-tool-dropdown input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;background:var(--ink);border-radius:50%;cursor:pointer}body.dark-mode #visuals-dropdown input[type=range]::-webkit-slider-thumb,body.dark-mode #text-dropdown input[type=range]::-webkit-slider-thumb, body.dark-mode #erase-tool-dropdown input[type=range]::-webkit-slider-thumb{background:var(--action-color)}#visuals-dropdown input[type=range]::-moz-range-thumb,#text-dropdown input[type=range]::-moz-range-thumb, #erase-tool-dropdown input[type=range]::-moz-range-thumb{width:16px;height:16px;background:var(--ink);border-radius:50%;cursor:pointer;border:none}body.dark-mode #visuals-dropdown input[type=range]::-moz-range-thumb,body.dark-mode #text-dropdown input[type=range]::-moz-range-thumb, body.dark-mode #erase-tool-dropdown input[type=range]::-moz-range-thumb{background:var(--action-color)}#asset-visuals-controls.disabled,#text-visuals-controls.disabled,#eraser-controls-wrapper.disabled{opacity:.5;pointer-events:none}.mg-btn{font-family:inherit;font-size:18px;background:var(--light);border:2px solid var(--ink);padding:8px 16px;margin:4px;cursor:pointer;text-decoration:none;color:var(--ink);transition:.2s all;box-shadow:2px 2px 0 var(--shadow);width:100%;white-space:nowrap}body.dark-mode .mg-btn:hover{filter:brightness(1.2)}.mg-btn:hover{transform:translate(2px,2px);box-shadow:0 0 0 var(--shadow)}.mg-btn:disabled,.mg-btn.disabled{opacity:.5;pointer-events:none;box-shadow:none;transform:none}.mg-btn.active{background-color:var(--danger-color);color:var(--light);box-shadow:none;transform:translate(2px,2px)}.mg-btn.success{background-color:var(--success-color)}.mg-btn.generate{background-color:var(--ink);color:var(--light)}body.dark-mode .mg-btn.generate{background-color:var(--action-color);color:var(--ink)}body.dark-mode .mg-btn.record,body.dark-mode .mg-btn.active{color:var(--ink)}.hidden{display:none!important}#studio-container{display:grid;grid-template-columns:320px 1fr;grid-template-rows:minmax(0,1fr);gap:1.5rem;padding:1.5rem;flex-grow:1;min-height:0}#controls-panel{display:flex;flex-direction:column;gap:1rem;overflow-y:auto;min-height:0}#canvas-panel{display:flex;align-items:center;justify-content:center;border:2px solid var(--ink);background-color:var(--mid);position:relative;min-height:0;transition:background-color .5s ease-in-out;overflow:hidden}#controls-panel fieldset{background:var(--light);border:2px solid var(--ink);padding:.8rem;margin:0;text-align:left;transition:background-color .3s,border-color .3s,color .3s, opacity .3s}#controls-panel legend{font-size:1.2rem;font-weight:400;padding:0 .25rem;transition: color .3s;}.placeholder-text{color:var(--shadow);font-size:.9rem;text-align:center;padding:1rem;width:100%}body.dark-mode .placeholder-text{color:var(--ink)}#mg-asset-palette, #mg-local-asset-palette{display:flex;gap:.5rem;flex-wrap:wrap;min-height:70px;align-content:flex-start}.palette-slot,.layer-thumb{width:60px;height:60px;border:2px solid var(--ink);background:var(--light);cursor:pointer;position:relative;box-shadow:2px 2px 0 var(--shadow)}.layer-thumb{cursor:grab}.palette-slot.empty{display:flex;align-items:center;justify-content:center;font-size:3rem;line-height:1;color:var(--mid);transition:all .2s}.palette-slot.empty:hover{background-color:#e0e0e0;color:var(--ink)}body.dark-mode .palette-slot.empty{color:var(--ink)}body.dark-mode .palette-slot.empty:hover{background-color:var(--mid);color:var(--ink)}.layer-thumb img{width:100%;height:100%;object-fit:cover;pointer-events:none}.layer-thumb.active{border:2px solid var(--action-color);transform:scale(1.05);box-shadow:none}.layer-controls{position:absolute;top:-5px;right:-5px;display:flex;gap:2px}.layer-btn{background-color:var(--danger-color);border:1px solid var(--ink);color:#fff;font-size:.8rem;font-weight:700;line-height:1;padding:1px 4px;cursor:pointer;width:18px;height:18px;text-align:center}#mg-movie-canvas,#mg-controls-overlay-canvas,#mg-pasteboard-overlay-canvas{position:absolute}#mg-controls-overlay-canvas,#mg-pasteboard-overlay-canvas{pointer-events:none}#mg-movie-canvas{pointer-events:auto}.mg-overlay-base{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .3s,visibility 0s .3s;background:rgba(10,10,10,.25)}body.dark-mode .mg-overlay-base{background:rgba(var(--bg-rgb),.5)}.mg-overlay-base.visible{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .3s,visibility 0s 0s}.overlay-close-btn{position:absolute;top:8px;right:10px;background:0 0;border:none;line-height:1;cursor:pointer;padding:5px;font-family:'VT323',monospace;color:var(--ink);font-size:2rem;z-index:10;transition:opacity .2s}.overlay-close-btn:hover{opacity:.6}#mg-asset-picker-grid-wrapper, #mg-local-asset-folder-wrapper{background:var(--light);border:2px solid var(--ink);box-shadow:4px 4px 0 var(--ink);padding:1.5rem;max-width:800px;width:90vw;max-height:85vh;display:flex;flex-direction:column;position:relative;transition: max-width .3s ease-in-out;}#mg-asset-picker-grid-wrapper h4, #mg-local-asset-folder-wrapper h4{font-size:1.5rem;text-align:center;font-weight:400;margin:0 0 1rem}#mg-asset-picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:.5rem;overflow-y:auto;padding:.5rem;flex-grow:1}#mg-asset-picker-actions{margin-top:1rem;text-align:center;display:flex;gap:.5rem;justify-content:center}
+/* --- ASSET FOLDER GRID & BUTTON STYLES --- */
+#mg-local-asset-grid, #mg-local-asset-grid-assets, #mg-local-asset-grid-backgrounds {display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:1rem;overflow-y:auto;padding:1rem;flex-grow:1}.mg-template{position:relative;aspect-ratio:1/1;border:2px solid var(--mid);background-color:var(--bg);box-shadow:2px 2px 0 var(--shadow);transition:all .2s ease-in-out}.mg-template:hover{transform:scale(1.03);box-shadow:4px 4px 0 var(--shadow)}.mg-template img{display:block;width:100%;height:100%;object-fit:cover;cursor:pointer;}.mg-template .layer-btn.delete{position:absolute;top:4px;right:4px;z-index:5;width:22px;height:22px;font-size:1rem;display:flex;align-items:center;justify-content:center;border-radius:2px;}
+.mg-btn.tab { background: transparent; box-shadow: 2px 2px 0 var(--shadow); transform: translateY(0); transition: transform .1s ease, box-shadow .1s ease, background-color .2s; }
+.mg-btn.tab:hover { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--shadow); }
+.mg-btn.tab:active, .mg-btn.tab.active { background: transparent; transform: translate(2px, 2px); box-shadow: 0 0 0 var(--shadow); }
+body.dark-mode .mg-btn.tab.active { color: var(--light); }
+#mg-toast{visibility:hidden;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--light);border:2px solid var(--ink);padding:.5rem 1rem;color:var(--ink);font-size:1rem;z-index:2000;box-shadow:4px 4px 0 var(--ink)}#canvas-placeholder{position:absolute;width:calc(100% - 20px);height:calc(100% - 20px);border:4px dashed var(--shadow);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;color:var(--shadow);transition:all .2s;padding:2rem;overflow:hidden;position:relative}#canvas-placeholder h3,#canvas-placeholder p{position:relative;z-index:2}#canvas-placeholder video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1;opacity:.6}#canvas-placeholder h3{font-size:2rem;margin:0 0 .5rem}#canvas-placeholder p{font-size:1.2rem}#canvas-placeholder:hover,#canvas-panel.drag-over #canvas-placeholder{border-color:var(--ink);color:var(--ink);background-color:rgba(255,255,255,.5)}body.dark-mode #canvas-placeholder:hover,body.dark-mode #canvas-panel.drag-over #canvas-placeholder{background-color:rgba(var(--light-rgb),.5)}#canvas-panel.drag-over{background-color:var(--shadow)}#layer-instructions{padding:0 0 .5rem 0;margin:0;font-size:1rem}#mg-confirmation-overlay, #mg-asset-action-overlay{z-index:5000}#mg-confirmation-dialog, #mg-asset-action-dialog{padding:1.5rem;text-align:center;width:90%;max-width:400px;height:auto}#mg-confirmation-dialog p, #mg-asset-action-dialog p{font-size:1.2rem;margin:0 0 1.5rem}#mg-confirmation-dialog .action-buttons, #mg-asset-action-dialog .action-buttons{display:flex;justify-content:center;gap:0.5rem;}#text-content,#text-font{transition:background-color .3s,border-color .3s,color .3s}#text-layer-manager{display:flex;gap:.5rem;align-items:center;padding-bottom:.5rem;margin-bottom:.5rem;border-bottom:2px solid var(--mid)}#text-layer-palette{display:flex;gap:.5rem;flex-wrap:wrap;flex-grow:1;min-height:44px}#add-new-text-layer-btn{width:40px;height:40px;flex-shrink:0;font-size:2rem;line-height:1;padding:0}.text-thumb{width:60px;height:40px;display:flex;align-items:center;justify-content:center;overflow:hidden;background-color:var(--ink);color:var(--light);font-size:.8rem;padding:2px;text-align:center}.text-thumb span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+.palette-slot.empty:disabled {opacity: 0.4;cursor: default;pointer-events: none;background-color: var(--light);}
+.palette-slot.empty:disabled:hover {background-color: var(--light);color: var(--mid);}
+#shortcuts-btn:disabled, #visuals-btn:disabled, #text-btn:disabled, #background-remover-btn:disabled, #erase-tool-btn:disabled {opacity: 0.5;pointer-events: none;cursor: default;}
+.layer-thumb.dragging {opacity: 0.4;transform: rotate(-3deg) scale(1.05);box-shadow: 0 8px 20px rgba(0,0,0,0.3);cursor: grabbing;}
+.layer-thumb.drag-over {border: 3px dashed var(--action-color);transform: scale(1.02);background-color: rgba(var(--action-color-rgb), 0.1);}
+#mg-pasteboard-overlay-canvas {position: absolute;pointer-events: none;display: none;}
+#canvas-panel.is-zoomed-out {background-color: var(--shadow);}
+#mg-movie-canvas, #mg-controls-overlay-canvas, #mg-pasteboard-overlay-canvas {transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;}
+#canvas-panel.is-zoomed-out #mg-movie-canvas,
+#canvas-panel.is-zoomed-out #mg-controls-overlay-canvas,
+#canvas-panel.is-zoomed-out #mg-pasteboard-overlay-canvas {transform: scale(0.8);box-shadow: 0 0 15px rgba(0,0,0,0.5);}
+#canvas-panel.is-zoomed-out #mg-controls-overlay-canvas {display: none;}
+#canvas-panel.is-zoomed-out #mg-pasteboard-overlay-canvas {display: block;}
+#toggle-view-btn:disabled,#toggle-view-btn:disabled:hover {opacity: 0.5;pointer-events: none;cursor: default;}
+.effects-checkbox { display: flex; align-items: center; margin-top: 0.5rem; }
+.effects-checkbox input { margin-right: 0.5rem; }
+.effects-controls { padding-left: 1.5rem; border-left: 2px solid var(--mid); margin-left: 0.5rem; }
+.effects-controls.disabled { opacity: 0.5; pointer-events: none; }
+#erase-tool-btn.active { background-color: var(--action-color); color: var(--light); }
+body.dark-mode #erase-tool-btn.active { color: var(--ink); }
+#mg-movie-canvas.erase-cursor { cursor: none; }
+#erase-tool-dropdown .mg-btn { margin-top: 0.5rem; }
+.eraser-mode-selector{display:flex;gap:.5rem;margin-bottom:.5rem}.eraser-mode-selector .mg-btn{width:50%;margin:0;padding:4px 8px;font-size:16px}.eraser-mode-selector .mg-btn.active{background-color:var(--action-color);color:var(--light);transform:none;box-shadow:inset 2px 2px 0 rgba(0,0,0,.2)}body.dark-mode .eraser-mode-selector .mg-btn.active{color:var(--ink)}
+#assets-folder-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+#assets-folder-actions p { font-size: 0.9rem; margin: 0; }
+#assets-folder-fieldset.disabled legend { color: var(--shadow); }
+/* Close-up eraser zoom box */
+#mg-eraser-zoom{
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 160px; /* display size */
+  height: 160px;
+  border: 2px solid var(--ink);
+  background: var(--light);
+  box-shadow: 4px 4px 0 var(--ink);
+  display: none;
+  z-index: 5;
+}
+
+/* Mini HUD for quick eraser controls */
+#mg-eraser-hud{
+  position: absolute;
+  right: 12px;
+  bottom: 184px; /* sits just above the zoom box */
+  display: none;
+  background: var(--light);
+  border: 2px solid var(--ink);
+  padding: 6px 8px;
+  box-shadow: 4px 4px 0 var(--ink);
+  z-index: 6;
+}
+#mg-eraser-hud .row{ display:flex; align-items:center; gap:.5rem; }
+#mg-eraser-hud button{
+  font-family: inherit;
+  font-size: 14px;
+  background: transparent;          /* neutral, no added color */
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  padding: 2px 8px;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 var(--shadow);
+}
+#mg-eraser-hud input[type=range]{ width: 120px; }
+</style>
+</head>
+<body>
+<div class=window>
+<div id="loading-overlay"><h1>Initializing Image-Maker-Studio.exe</h1></div>
+<div class=titlebar><span>Image-Maker-Studio.exe</span><div class=titlebar-controls><button id="theme-toggle-btn" title="Toggle Dark/Light Theme">◐</button><button id="toggle-view-btn" title="Toggle Canvas View (Z)">⬚</button><button id=visuals-btn>Edit Visuals</button><div id=visuals-dropdown><h5>Visuals Editor</h5><div id=asset-visuals-controls class=disabled><h6>Filters</h6><div class=slider-container><label for=asset-opacity>Opacity</label><input type=range id=asset-opacity min=0 max=1 step=.01 value=1></div><div class=slider-container><label for=asset-brightness>Brightness</label><input type=range id=asset-brightness min=0 max=2 step=.01 value=1></div><div class=slider-container><label for=asset-saturation>Saturation</label><input type=range id=asset-saturation min=0 max=2 step=.01 value=1></div><h6>Drop Shadow</h6><div class="effects-checkbox"><input type="checkbox" id="shadow-enable"><label for="shadow-enable">Enable</label></div><div id="shadow-controls" class="effects-controls disabled"><div class="slider-container"><label for="shadow-color">Color</label><input type="color" id="shadow-color" value="#000000"></div><div class="slider-container"><label for="shadow-blur">Blur</label><input type="range" id="shadow-blur" min="0" max="50" value="10"></div><div class="slider-container"><label for="shadow-offset-x">Offset X</label><input type="range" id="shadow-offset-x" min="-50" max="50" value="10"></div><div class="slider-container"><label for="shadow-offset-y">Offset Y</label><input type="range" id="shadow-offset-y" min="-50" max="50" value="10"></div></div><h6>Border</h6><div class="effects-checkbox"><input type="checkbox" id="border-enable"><label for="border-enable">Enable</label></div><div id="border-controls" class="effects-controls disabled"><div class="slider-container"><label for="border-color">Color</label><input type="color" id="border-color" value="#FFFFFF"></div><div class="slider-container"><label for="border-width">Width</label><input type="range" id="border-width" min="0" max="20" value="4"></div></div></div><div id=background-visuals-controls><h6>Background Filters</h6><div class=slider-container><label for=bg-brightness>Brightness</label><input type=range id=bg-brightness min=0 max=2 step=.01 value=1></div><div class=slider-container><label for=bg-saturation>Saturation</label><input type=range id=bg-saturation min=0 max=2 step=.01 value=1></div></div></div><button id="background-remover-btn">BG Remover</button><div id="background-remover-dropdown"><h5>Background Remover</h5><p class="placeholder-text" style="font-size: 0.9rem; margin-top: -0.5rem; margin-bottom: 0.8rem;">Requires a selected image asset.</p><button class="mg-btn" id="remove-bg-btn" disabled>Remove Background</button></div><button id="erase-tool-btn">Erase</button><div id="erase-tool-dropdown"><h5>Eraser Tool</h5><div class=eraser-mode-selector><button class="mg-btn" id=erase-btn>Erase</button><button class="mg-btn" id=unerase-btn>Unerase</button></div><div id="eraser-controls-wrapper" class="disabled"><h6>Brush Settings</h6><div class="slider-container"><label for="eraser-size">Brush Size</label><input type="range" id="eraser-size" min="5" max="200" value="40"></div><div class="slider-container"><label for="eraser-opacity">Opacity</label><input type="range" id="eraser-opacity" min="0" max="1" step=".01" value="1"></div><h6>History</h6><button class="mg-btn" id="undo-erase-btn" disabled>Undo</button><button class="mg-btn" id="revert-erasing-btn">Reset Layer</button></div></div><button id=text-btn>Text</button><div id=text-dropdown><h5>Text Editor</h5><div id=text-layer-manager><div id=text-layer-palette></div><button id=add-new-text-layer-btn class="palette-slot empty" title="Add new text layer">+</button></div><div id=text-visuals-controls class=disabled><div class=slider-container><label for=text-content>Text Content</label><textarea id=text-content rows=3 style=width:100%;font-family:inherit;font-size:1rem;padding:4px;border:2px solid var(--ink);background:var(--bg)>New Text</textarea></div><div class=slider-container><label for=text-font>Font</label><select id=text-font style=width:100%;font-family:inherit;font-size:1rem;padding:4px;border:2px solid var(--ink);background:var(--bg)><option value="'VT323', monospace">VT323</option><option value="'Anton', sans-serif">Anton</option><option value="'Indie Flower', cursive">Indie Flower</option><option value="'Londrina Outline', cursive">Londrina Outline</option><option value="'Patua One', cursive">Patua One</option><option value="'Pixelify Sans', sans-serif">Pixelify Sans</option><option value="'Press Start 2P', cursive">Press Start 2P</option><option value="'Roboto', sans-serif">Roboto</option><option value="'Rubik Mono One', sans-serif">Rubik Mono One</option><option value="'Young Serif', serif">Young Serif</option><option value="Arial, sans-serif">Arial</option><option value="Verdana, sans-serif">Verdana</option><option value="Georgia, serif">Georgia</option><option value="Times New Roman, serif">Times New Roman</option><option value="Courier New, monospace">Courier New</option><option value="Impact, fantasy">Impact</option><option value="Comic Sans MS, cursive">Comic Sans MS</option></select></div><div class=slider-container><label for=text-size>Size</label><input type=range id=text-size min=20 max=800 step=1 value=410></div><div class=slider-container><label for=text-color>Color</label><input type=color id=text-color value=#FFFFFF style=width:100%;border:none;padding:0></div><div class="slider-container"><label for="text-stroke-color">Stroke Color</label><input type="color" id="text-stroke-color" value="#000000" style="width: 100%; border: none; padding: 0;"></div><div class="slider-container"><label for="text-stroke-width">Stroke Width</label><input type="range" id="text-stroke-width" min="0" max="20" step="1" value="0"></div><div id="text-zorder-controls" style="display:flex;gap:.5rem;align-items:center;margin-top:.5rem;"><button id="text-move-back" class="mg-btn" type="button" style="width:auto;padding:2px 8px;">Move back</button><button id="text-move-forward" class="mg-btn" type="button" style="width:auto;padding:2px 8px;">Move forward</button></div></div></div>
+<button id=shortcuts-btn>Shortcuts</button><div class=controls-fake><div class=btn-square></div><div class=btn-square></div></div><div id=shortcuts-dropdown><h5>Keyboard Shortcuts</h5><ul><li><span>Toggle Canvas View</span><kbd>Z</kbd></li><li><span>Enlarge Asset</span><kbd>D</kbd></li><li><span>Shrink Asset</span><kbd>F</kbd></li><li><span>Flip Asset Horizontally</span><kbd>S</kbd></li><li><span>Move Layer Forward</span><kbd>Q</kbd></li><li><span>Move Layer Backward</span><kbd>W</kbd></li><li><span>Delete Asset</span><kbd>Delete</kbd></li></ul></div></div></div><main id=studio-container><div id=controls-panel><fieldset id="assets-folder-fieldset"><legend>Assets Folder</legend><div id="assets-folder-actions"><p>Your saved assets</p><button id="mg-view-all-local-assets-btn" class="mg-btn" style="width:auto; padding: 2px 8px; font-size: 16px; margin: 0;">View All</button></div><div id="mg-local-asset-palette"></div></fieldset><fieldset id="layers-fieldset"><legend>Layers</legend><p id=layer-instructions class=placeholder-text>Add a background to begin.</p><div id="mg-asset-palette"></div></fieldset>
+<fieldset><legend>Canvas Actions</legend><button class="mg-btn generate" id=mg-download-image-btn disabled>Download Image</button><div class="action-buttons" style="margin-top: 0.5rem;"><button class="mg-btn" id="mg-clear-canvas-btn" disabled>Clear Canvas</button></div></fieldset></div><div id=canvas-panel><canvas id=mg-movie-canvas></canvas><canvas id=mg-controls-overlay-canvas></canvas><canvas id="mg-pasteboard-overlay-canvas"></canvas><canvas id="mg-eraser-zoom"></canvas><div id="mg-eraser-hud"><div class="row" style="margin-bottom:6px;"><button id="mg-eraser-toggle-btn" type="button" title="Toggle Erase / Unerase">Erase</button></div><div class="row"><label for="mg-eraser-size-mini" style="font-size:14px;">Size</label><input id="mg-eraser-size-mini" type="range" min="5" max="200" value="40"></div></div><div id=canvas-placeholder><video src=welcomevid.mp4 autoplay loop muted playsinline></video><h3>Click, Paste, or Drag & Drop File</h3><p>to add a background image & begin creating</p></div></div></main><input type=file id=initial-background-input accept=image/* style=display:none></div><div id=mg-asset-library-overlay class=mg-overlay-base><div id=mg-asset-picker-grid-wrapper class=window><button id=mg-asset-library-close class=overlay-close-btn>X</button><h4>Click an asset to add it to the canvas</h4><div id=mg-asset-picker-grid></div><div id=mg-asset-picker-actions><label class=mg-btn>Upload Custom <input type=file id=mg-asset-picker-file accept=image/* style=display:none></label></div></div></div><div id=mg-local-asset-folder-overlay class=mg-overlay-base><div id=mg-local-asset-folder-wrapper class=window><button id=mg-local-asset-folder-close class=overlay-close-btn>X</button><h4>Your Library</h4><div id="mg-local-asset-tabs" style="display:flex;gap:.5rem;justify-content:center;margin-bottom:.5rem;"><button id="tab-assets" class="mg-btn tab" type="button">Assets</button><button id="tab-backgrounds" class="mg-btn tab" type="button">Backgrounds</button></div><div id="mg-local-asset-grid-assets"></div><div id="mg-local-asset-grid-backgrounds" class="hidden"></div></div></div><div id=mg-confirmation-overlay class=mg-overlay-base><div id=mg-confirmation-dialog class=window><p id=mg-confirmation-text>Are you sure?</p><div class=action-buttons><button id="mg-confirm-yes-btn" class="mg-btn active" type="button">Yes</button><button id="mg-confirm-no-btn" class="mg-btn" type="button">No</button></div></div></div><div id="mg-asset-action-overlay" class="mg-overlay-base"><div id="mg-asset-action-dialog" class="window"><p>How would you like to use this asset?</p><div class="action-buttons"><button id="mg-asset-action-background-btn" class="mg-btn">Set as Background</button><button id="mg-asset-action-layer-btn" class="mg-btn">Add as Layer</button></div></div></div><div id=mg-toast></div></body>
+</html>
+<script>
+    (function () {
+        // --- Variable Declarations ---
+        const assetLibraryOverlay = document.getElementById('mg-asset-library-overlay');
+        const assetPalette = document.getElementById('mg-asset-palette');
+        const assetPickerFileInput = document.getElementById('mg-asset-picker-file');
+        const canvasPanel = document.getElementById('canvas-panel');
+        const canvasPlaceholder = document.getElementById('canvas-placeholder');
+        const controlsOverlayCanvas = document.getElementById('mg-controls-overlay-canvas');
+        const controlsCtx = controlsOverlayCanvas.getContext('2d');
+        const pasteboardOverlayCanvas = document.getElementById('mg-pasteboard-overlay-canvas');
+        const pasteboardCtx = pasteboardOverlayCanvas.getContext('2d');
+        const PASTEBOARD_MARGIN = 500;
+        const initialBackgroundInput = document.getElementById('initial-background-input');
+        const layerInstructions = document.getElementById('layer-instructions');
+        const movieCanvas = document.getElementById('mg-movie-canvas');
+        const movieCtx = movieCanvas.getContext('2d');
+        const downloadImageBtn = document.getElementById('mg-download-image-btn');
+        const clearCanvasBtn = document.getElementById('mg-clear-canvas-btn');
+        const confirmationOverlay = document.getElementById('mg-confirmation-overlay');
+        const confirmationText = document.getElementById('mg-confirmation-text');
+        const confirmYesBtn = document.getElementById('mg-confirm-yes-btn');
+        const confirmNoBtn = document.getElementById('mg-confirm-no-btn');
+        const shortcutsBtn = document.getElementById('shortcuts-btn');
+        const shortcutsDropdown = document.getElementById('shortcuts-dropdown');
+        const visualsBtn = document.getElementById('visuals-btn');
+        const visualsDropdown = document.getElementById('visuals-dropdown');
+        const assetVisualsControls = document.getElementById('asset-visuals-controls');
+        const assetOpacitySlider = document.getElementById('asset-opacity');
+        const assetBrightnessSlider = document.getElementById('asset-brightness');
+        const assetSaturationSlider = document.getElementById('asset-saturation');
+        const bgBrightnessSlider = document.getElementById('bg-brightness');
+        const bgSaturationSlider = document.getElementById('bg-saturation');
+        const textBtn = document.getElementById('text-btn');
+        const textDropdown = document.getElementById('text-dropdown');
+        const textVisualsControls = document.getElementById('text-visuals-controls');
+        const textContentInput = document.getElementById('text-content');
+        const textFontSelect = document.getElementById('text-font');
+        const textSizeSlider = document.getElementById('text-size');
+        const textColorInput = document.getElementById('text-color');
+        const textStrokeColorInput = document.getElementById('text-stroke-color');
+        const textStrokeWidthSlider = document.getElementById('text-stroke-width');
+        const addNewTextLayerBtn = document.getElementById('add-new-text-layer-btn');
+        const textLayerPalette = document.getElementById('text-layer-palette');
+        const themeToggleBtn = document.getElementById('theme-toggle-btn');
+        const toggleViewBtn = document.getElementById('toggle-view-btn');
+        const backgroundRemoverBtn = document.getElementById('background-remover-btn');
+        const backgroundRemoverDropdown = document.getElementById('background-remover-dropdown');
+        const removeBgBtn = document.getElementById('remove-bg-btn');
+        const eraseToolBtn = document.getElementById('erase-tool-btn');
+        const eraseToolDropdown = document.getElementById('erase-tool-dropdown');
+        const eraserControlsWrapper = document.getElementById('eraser-controls-wrapper');
+        const eraserSizeSlider = document.getElementById('eraser-size');
+        const eraserOpacitySlider = document.getElementById('eraser-opacity');
+        const undoEraseBtn = document.getElementById('undo-erase-btn');
+        const revertErasingBtn = document.getElementById('revert-erasing-btn');
+        const eraseBtn = document.getElementById('erase-btn');
+        const uneraseBtn = document.getElementById('unerase-btn');
+        const assetsFolderFieldset = document.getElementById('assets-folder-fieldset');
+        const localAssetPalette = document.getElementById('mg-local-asset-palette');
+        const viewAllLocalAssetsBtn = document.getElementById('mg-view-all-local-assets-btn');
+        const localAssetFolderOverlay = document.getElementById('mg-local-asset-folder-overlay');
+        const localAssetFolderWrapper = document.getElementById('mg-local-asset-folder-wrapper');
+        const localAssetGridAssets = document.getElementById('mg-local-asset-grid-assets');
+        const localAssetGridBackgrounds = document.getElementById('mg-local-asset-grid-backgrounds');
+        const tabAssetsBtn = document.getElementById('tab-assets');
+        const tabBackgroundsBtn = document.getElementById('tab-backgrounds');
+        const localAssetFolderCloseBtn = document.getElementById('mg-local-asset-folder-close');
+        
+        // Adaptive zoom box + feel
+        const UI_MIN_PX = 120;     // smallest zoom window
+        const UI_MAX_PX = 220;     // largest zoom window
+        const TARGET_RADIUS_PX = 34; // desired circle radius inside the zoom box (stays ~constant)
+        const MIN_MARGIN_PREVIEW = 12; // minimum background padding (px) around the circle
+        const MIN_ZOOM_FEEL = 1.08; // preview must be at least 8% closer than main canvas
+        const BRUSH_MIN = 5, BRUSH_MAX = 200; // match your slider
+        let lastEraseCanvasPoint = null; // remember last point while dragging
+
+        const eraserZoomCanvas = document.getElementById('mg-eraser-zoom');
+        const eraserZoomCtx = eraserZoomCanvas.getContext('2d');
+        const eraserHud = document.getElementById('mg-eraser-hud');
+        const eraserToggleBtn = document.getElementById('mg-eraser-toggle-btn');
+        const eraserSizeMini = document.getElementById('mg-eraser-size-mini');
+
+
+        let canvasState = {
+            backgroundElement: null,
+            backgroundType: 'none',
+            bgBrightness: 1,
+            bgSaturation: 1,
+            layers: []
+        };
+
+        const assetCache = {};
+        let activeLayerId = null;
+        let movieInteraction = { active: false };
+        let animationFrameId = null;
+        const FADE_IN_DURATION = 300;
+        let isAnimatingRender = false;
+        let masterWidth = 1280;
+        let masterHeight = 720;
+        let isCanvasViewZoomedOut = false;
+        let eraserMode = 'none';
+        let isEraserArmed = false;
+        let eraseBrushPos = { x: 0, y: 0 };
+        
+        const getActiveLayer = () => canvasState.layers.find(l => l.id === activeLayerId);
+
+        // --- HASHING & INDEXEDDB HELPER FUNCTIONS ---
+        async function sha256Hex(blob) {
+            const buf = await blob.arrayBuffer();
+            const digest = await crypto.subtle.digest('SHA-256', buf);
+            const bytes = new Uint8Array(digest);
+            return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function idbOpen(dbName = 'ims-db', store = 'assets') {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open(dbName, 3);
+                req.onupgradeneeded = () => {
+                    const db = req.result;
+                    let os;
+                    if (!db.objectStoreNames.contains(store)) {
+                        os = db.createObjectStore(store, { keyPath: 'id', autoIncrement: true });
+                    } else {
+                        os = req.transaction.objectStore(store);
+                    }
+                    if (!os.indexNames.contains('createdAt')) os.createIndex('createdAt', 'createdAt');
+                    if (!os.indexNames.contains('hash')) os.createIndex('hash', 'hash', { unique: false });
+                    if (!os.indexNames.contains('kind')) os.createIndex('kind', 'kind', { unique: false });
+                };
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        async function idbPut(record, dbName = 'ims-db', store = 'assets') {
+            const db = await idbOpen(dbName, store);
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(store, 'readwrite');
+                const req = tx.objectStore(store).put(record);
+                req.onsuccess = () => {
+                    if (record.id == null) record.id = req.result;
+                };
+                tx.oncomplete = () => resolve(record);
+                tx.onerror = () => reject(tx.error);
+            });
+        }
+
+        async function idbGetAll(dbName = 'ims-db', store = 'assets') {
+            const db = await idbOpen(dbName, store);
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(store, 'readonly');
+                const req = tx.objectStore(store).getAll();
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        async function idbDelete(id, dbName = 'ims-db', store = 'assets') {
+            const db = await idbOpen(dbName, store);
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(store, 'readwrite');
+                tx.objectStore(store).delete(id);
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error);
+            });
+        }
+        
+        async function idbFindByHash(hash, dbName = 'ims-db', store = 'assets') {
+            const db = await idbOpen(dbName, store);
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(store, 'readonly');
+                const os = tx.objectStore(store);
+                const idx = os.indexNames.contains('hash') ? os.index('hash') : null;
+                if (!idx) return resolve([]);
+                const req = idx.getAll(hash);
+                req.onsuccess = () => resolve(req.result || []);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        async function findDuplicatesIncludingHashless(targetHash) {
+            let matches = await idbFindByHash(targetHash);
+            const matchedIds = new Set(matches.map(m => m.id));
+            const all = await idbGetAll();
+            for (const rec of all) {
+                if (matchedIds.has(rec.id)) continue;
+                if (!rec.hash && rec.full) {
+                    rec.hash = await sha256Hex(rec.full);
+                    await idbPut(rec);
+                    if (rec.hash === targetHash) {
+                        matches.push(rec);
+                        matchedIds.add(rec.id);
+                    }
+                }
+            }
+            return matches;
+        }
+
+        async function dedupeExistingAssetsByHashKeepNewest() {
+            const all = await idbGetAll();
+            for (const rec of all) {
+                if (!rec.hash && rec.full) {
+                    rec.hash = await sha256Hex(rec.full);
+                    await idbPut(rec);
+                }
+            }
+            const byHash = new Map();
+            for (const rec of await idbGetAll()) {
+                if (!rec.hash) continue;
+                const best = byHash.get(rec.hash);
+                if (!best || rec.createdAt > best.createdAt) {
+                    byHash.set(rec.hash, rec);
+                }
+            }
+            for (const rec of await idbGetAll()) {
+                if (rec.hash && byHash.get(rec.hash).id !== rec.id) {
+                    await idbDelete(rec.id);
+                }
+            }
+            await renderLocalAssetPalette_IDB();
+        }
+
+        // --- ASSET MANAGEMENT LOGIC ---
+
+        async function toBlobFromDataURL(dataURL) {
+            const res = await fetch(dataURL);
+            return await res.blob();
+        }
+
+        async function createThumbBlob(imgBlob, max = 256, type = 'image/webp', quality = 0.8) {
+            try {
+                const bmp = await createImageBitmap(imgBlob);
+                const scale = Math.min(max / bmp.width, max / bmp.height, 1);
+                const w = Math.round(bmp.width * scale);
+                const h = Math.round(bmp.height * scale);
+                const c = new OffscreenCanvas(w, h);
+                const ctx = c.getContext('2d');
+                ctx.drawImage(bmp, 0, 0, w, h);
+                return await c.convertToBlob({ type, quality });
+            } catch (e) {
+                console.error("Could not create thumbnail from blob, possibly a non-image type.", e);
+                return await (await fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8Xw8AAmMBb3eGmC0AAAAASUVORK5CYII=')).blob();
+            }
+        }
+        
+        async function saveAssetToLibrary({ dataURL, mime = 'image/png', kind = 'asset' }) {
+            const fullBlob = await toBlobFromDataURL(dataURL);
+            const hash = await sha256Hex(fullBlob);
+            const thumbBlob = await createThumbBlob(fullBlob);
+
+            const rec = { full: fullBlob, thumb: thumbBlob, mime, createdAt: Date.now(), hash, kind };
+            await idbPut(rec);
+
+            const dups = await findDuplicatesIncludingHashless(hash);
+            for (const old of dups) {
+                if (old.id !== rec.id) await idbDelete(old.id);
+            }
+            
+            await enforceQuota(80 * 1024 * 1024);
+            await renderLocalAssetPalette_IDB();
+            if (localAssetFolderOverlay.classList.contains('visible')) {
+                await renderFullLocalAssetFolder_IDB();
+            }
+        }
+        
+        async function enforceQuota(limitBytes) {
+            const assets = await idbGetAll();
+            let totalBytes = assets.reduce((sum, r) => sum + (r.full.size || 0) + (r.thumb.size || 0), 0);
+            if (totalBytes <= limitBytes) return;
+
+            assets.sort((a,b) => a.createdAt - b.createdAt);
+            for (const rec of assets) {
+                if (totalBytes <= limitBytes) break;
+                await idbDelete(rec.id);
+                totalBytes -= (rec.full.size || 0) + (rec.thumb.size || 0);
+                toast('Oldest asset removed to free space.', 3000);
+            }
+        }
+        
+        async function deleteAssetFromLibrary(assetId) {
+            try {
+                const idNum = typeof assetId === 'string' ? Number(assetId) : assetId;
+                if (!Number.isFinite(idNum)) throw new Error(`Invalid asset id: ${assetId}`);
+                
+                await idbDelete(idNum);
+
+                toast('Asset removed from folder.', 1500);
+                await renderLocalAssetPalette_IDB();
+                if (localAssetFolderOverlay.classList.contains('visible')) {
+                    await renderFullLocalAssetFolder_IDB();
+                }
+            } catch (error) {
+                console.error("Failed to delete asset:", error);
+                toast("Error: Could not delete asset.", 4000);
+            }
+        }
+
+        async function renderLocalAssetPalette_IDB() {
+            const all = await idbGetAll();
+            const assetsOnly = all
+                .map(r => ({ ...r, kind: r.kind || 'asset' }))
+                .filter(r => r.kind === 'asset')
+                .sort((a, b) => b.createdAt - a.createdAt);
+
+            localAssetPalette.innerHTML = '';
+            const toShow = assetsOnly.slice(0, 4);
+
+            for (const asset of toShow) {
+                const thumb = document.createElement('div');
+                thumb.className = 'layer-thumb';
+                thumb.title = "Add asset as a new layer";
+                const thumbUrl = URL.createObjectURL(asset.thumb);
+                const img = new Image();
+                img.src = thumbUrl;
+                img.onload = () => URL.revokeObjectURL(thumbUrl);
+                thumb.appendChild(img);
+
+                thumb.addEventListener('click', () => {
+                    if (!canvasState.backgroundElement) {
+                        toast('Please set a background before adding layers.', 2000);
+                        return;
+                    }
+                    addImageLayer(URL.createObjectURL(asset.full));
+                });
+                localAssetPalette.appendChild(thumb);
+            }
+
+            if (assetsOnly.length === 0) {
+                localAssetPalette.innerHTML = `<p class="placeholder-text" style="padding:0;line-height:1.2;">Your assets will appear here when you add layers.</p>`;
+            }
+        }
+
+        function setLocalFolderTab(tab) {
+            const isAssets = tab === 'assets';
+            tabAssetsBtn.classList.toggle('active', isAssets);
+            tabBackgroundsBtn.classList.toggle('active', !isAssets);
+            localAssetGridAssets.classList.toggle('hidden', !isAssets);
+            localAssetGridBackgrounds.classList.toggle('hidden', isAssets);
+        }
+
+        async function renderFullLocalAssetFolder_IDB() {
+            const all = await idbGetAll();
+            const normalized = all.map(r => ({ ...r, kind: r.kind || 'asset' }));
+            const assets = normalized.filter(r => r.kind === 'asset').sort((a,b) => b.createdAt - a.createdAt);
+            const bgs = normalized.filter(r => r.kind === 'background').sort((a,b) => b.createdAt - a.createdAt);
+
+            const count = Math.max(assets.length, bgs.length);
+            if (count < 8) localAssetFolderWrapper.style.maxWidth = '480px';
+            else if (count < 16) localAssetFolderWrapper.style.maxWidth = '640px';
+            else localAssetFolderWrapper.style.maxWidth = '800px';
+
+            localAssetGridAssets.innerHTML = '';
+            localAssetGridBackgrounds.innerHTML = '';
+
+            if (assets.length === 0) {
+                localAssetGridAssets.innerHTML = `<p class="placeholder-text">No saved assets yet. Upload an image as a layer to save it here.</p>`;
+            }
+            if (bgs.length === 0) {
+                localAssetGridBackgrounds.innerHTML = `<p class="placeholder-text">No saved backgrounds yet. Upload a background to save it here.</p>`;
+            }
+
+            for (const rec of assets) {
+                const div = document.createElement('div');
+                div.className = 'mg-template';
+                div.dataset.assetId = String(rec.id);
+                const thumbUrl = URL.createObjectURL(rec.thumb);
+                div.innerHTML = `<img src="${thumbUrl}" alt="Asset"><div class="layer-btn delete" title="Remove from folder">x</div>`;
+                const img = div.querySelector('img');
+                img.onload = () => URL.revokeObjectURL(thumbUrl);
+                img.addEventListener('click', () => {
+                    if (!canvasState.backgroundElement) {
+                        toast('Please set a background before adding layers.', 2000);
+                        localAssetFolderOverlay.classList.remove('visible');
+                        return;
+                    }
+                    addImageLayer(URL.createObjectURL(rec.full));
+                    localAssetFolderOverlay.classList.remove('visible');
+                });
+                div.querySelector('.delete').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const idNum = Number(div.dataset.assetId);
+                    openConfirmationModal('Remove this asset from your local folder?', async () => {
+                        div.remove();
+                        await deleteAssetFromLibrary(idNum);
+                    });
+                });
+                localAssetGridAssets.appendChild(div);
+            }
+
+            for (const rec of bgs) {
+                const div = document.createElement('div');
+                div.className = 'mg-template';
+                div.dataset.assetId = String(rec.id);
+                const thumbUrl = URL.createObjectURL(rec.thumb);
+                div.innerHTML = `<img src="${thumbUrl}" alt="Background"><div class="layer-btn delete" title="Remove from folder">x</div>`;
+                const img = div.querySelector('img');
+                img.onload = () => URL.revokeObjectURL(thumbUrl);
+                img.addEventListener('click', () => {
+                    const fullUrl = URL.createObjectURL(rec.full);
+                    const imgEl = new Image();
+                    imgEl.onload = () => {
+                        setBackground(imgEl, 'image');
+                        URL.revokeObjectURL(fullUrl);
+                        localAssetFolderOverlay.classList.remove('visible');
+                    };
+                    imgEl.onerror = () => {
+                        URL.revokeObjectURL(fullUrl);
+                        toast('Could not load background image.', 3000);
+                    };
+                    imgEl.src = fullUrl;
+                });
+                div.querySelector('.delete').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const idNum = Number(div.dataset.assetId);
+                    openConfirmationModal('Remove this background from your library?', async () => {
+                        div.remove();
+                        await deleteAssetFromLibrary(idNum);
+                    });
+                });
+                localAssetGridBackgrounds.appendChild(div);
+            }
+        }
+
+        function handleBackgroundUpload(file) {
+            if (!file || !file.type.startsWith('image/')) {
+                toast('Unsupported file type for background. Please use an image.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const dataURL = e.target.result;
+                saveAssetToLibrary({ dataURL, kind: 'background' });
+                const img = new Image();
+                img.onload = () => { setBackground(img); };
+                img.onerror = () => toast('Could not load background image.');
+                img.src = dataURL;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function processUploadedFile(file) {
+            if (!file || !file.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const dataURL = e.target.result;
+                saveAssetToLibrary({ dataURL, kind: 'asset' });
+                addImageLayer(dataURL);
+                closeAssetLibrary();
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        async function handleNewAsset(src) {
+            if (!canvasState.backgroundElement) {
+                toast('Please set a background before adding layers.', 2000);
+                return;
+            }
+            if (!src.startsWith('blob:')) {
+                await saveAssetToLibrary({ dataURL: src, kind: 'asset' });
+            }
+            addImageLayer(src);
+        }
+        
+        function addImageLayer(src) {
+            if (!canvasState.backgroundElement) {
+                toast('Please add a background image first.', 2000);
+                return;
+            }
+
+            const createFromImage = (img) => {
+                const w = img.naturalWidth || 0;
+                const h = img.naturalHeight || 0;
+                if (!w || !h) {
+                    img.addEventListener('load', () => createFromImage(img), { once: true });
+                    return;
+                }
+
+                const proxyCanvas = document.createElement('canvas');
+                proxyCanvas.width = w;
+                proxyCanvas.height = h;
+                const proxyCtx = proxyCanvas.getContext('2d');
+                proxyCtx.drawImage(img, 0, 0);
+
+                const newLayer = {
+                    id: (Date.now() + Math.random()).toString(),
+                    src, asset: img, type: 'image',
+                    x: movieCanvas.width / 2, y: movieCanvas.height / 2,
+                    size: Math.max(20, movieCanvas.width * 0.25),
+                    rot: 0, flipX: false,
+                    opacity: 1, brightness: 1, saturation: 1,
+                    shadow: { enabled: false, color: '#000000', blur: 10, offsetX: 10, offsetY: 10 },
+                    border: { enabled: false, color: '#FFFFFF', width: 4 },
+                    proxyCanvas, proxyCtx,
+                    undoStack: [],
+                    createdAt: Date.now()
+                };
+
+                canvasState.layers.unshift(newLayer);
+                activeLayerId = newLayer.id;
+                
+                renderLayerPalette();
+                renderTextLayerPalette();
+                updateEditPanelsUI();
+                triggerAnimatedRender();
+            };
+
+            if (assetCache[src]) {
+                createFromImage(assetCache[src]);
+                return;
+            }
+
+            const image = new Image();
+            image.crossOrigin = 'anonymous';
+            image.onload = () => { assetCache[src] = image; createFromImage(image); };
+            image.onerror = () => toast(`Could not load asset: ${src}`);
+            image.src = src;
+        }
+        
+        async function removeBackground() {
+            const activeLayer = getActiveLayer();
+            if (!activeLayer || activeLayer.type !== 'image') {
+                toast('Please select an image asset.', 4000);
+                return;
+            }
+            toast('AI is removing background, please wait...', null);
+            removeBgBtn.disabled = true;
+            removeBgBtn.textContent = 'Processing...';
+
+            try {
+                const resultBlob = await imglyRemoveBackground(activeLayer.proxyCanvas, {
+                    publicPath: './assets/',
+                    progress: (prog) => {
+                        toast(prog < 1 ? `Loading AI model: ${Math.round(prog*100)}%` : 'Processing image with AI...', null);
+                    }
+                });
+                const newSrcUrl = URL.createObjectURL(resultBlob);
+                const newImg = new Image();
+                newImg.onload = () => {
+                    activeLayer.proxyCanvas.width = newImg.naturalWidth;
+                    activeLayer.proxyCanvas.height = newImg.naturalHeight;
+                    activeLayer.proxyCtx.clearRect(0, 0, newImg.naturalWidth, newImg.naturalHeight);
+                    activeLayer.proxyCtx.drawImage(newImg, 0, 0);
+                    
+                    const newSrcDataUrl = activeLayer.proxyCanvas.toDataURL();
+                    saveAssetToLibrary({ dataURL: newSrcDataUrl, kind: 'asset' });
+                    activeLayer.src = newSrcDataUrl;
+
+                    toast('Background removed successfully!', 4000);
+                    removeBgBtn.disabled = false;
+                    removeBgBtn.textContent = 'Remove Background';
+                    drawFrame();
+                    renderLayerPalette();
+                    URL.revokeObjectURL(newSrcUrl);
+                };
+                newImg.src = newSrcUrl;
+            } catch (error) {
+                console.error("Background removal error:", error);
+                toast('Could not remove background. See console.', 5000);
+                removeBgBtn.disabled = false;
+                removeBgBtn.textContent = 'Remove Background';
+            }
+        }
+        
+        function updateControlsState() {
+            const hasBackground = !!canvasState.backgroundElement;
+            downloadImageBtn.disabled = !hasBackground;
+            clearCanvasBtn.disabled = !hasBackground;
+            visualsBtn.disabled = !hasBackground;
+            textBtn.disabled = !hasBackground;
+            backgroundRemoverBtn.disabled = !hasBackground;
+            eraseToolBtn.disabled = !hasBackground;
+            addNewTextLayerBtn.disabled = !hasBackground;
+            renderLayerPalette();
+            renderTextLayerPalette();
+            updateEraseHistoryButtons();
+        }
+
+        function setBackground(element) {
+            canvasState.backgroundElement = element;
+            canvasState.backgroundType = 'image';
+            canvasPlaceholder.classList.add('hidden');
+            
+            const w = element.naturalWidth;
+            const h = element.naturalHeight;
+            masterWidth = w;
+            masterHeight = h;
+
+            movieCanvas.width = controlsOverlayCanvas.width = w;
+            movieCanvas.height = controlsOverlayCanvas.height = h;
+            
+            resizeCanvas();
+            updateControlsState();
+            updateEditPanelsUI();
+            drawFrame();
+            toast('Background set! Add layers to create your image.', 3000);
+        }
+        
+        function resizeCanvas() {
+            const panelWidth = canvasPanel.clientWidth;
+            const panelHeight = canvasPanel.clientHeight;
+            if (panelWidth === 0 || panelHeight === 0) return;
+            const canvasAspectRatio = movieCanvas.width / movieCanvas.height;
+            let displayWidth, displayHeight;
+            if (panelWidth / panelHeight > canvasAspectRatio) {
+                displayHeight = panelHeight;
+                displayWidth = displayHeight * canvasAspectRatio;
+            } else {
+                displayWidth = panelWidth;
+                displayHeight = displayWidth / canvasAspectRatio;
+            }
+
+            [movieCanvas, controlsOverlayCanvas].forEach(c => {
+                c.style.width = `${displayWidth}px`;
+                c.style.height = `${displayHeight}px`;
+            });
+
+            pasteboardOverlayCanvas.width = movieCanvas.width + PASTEBOARD_MARGIN * 2;
+            pasteboardOverlayCanvas.height = movieCanvas.height + PASTEBOARD_MARGIN * 2;
+            
+            const scaleFactor = displayWidth / movieCanvas.width;
+            pasteboardOverlayCanvas.style.width = `${pasteboardOverlayCanvas.width * scaleFactor}px`;
+            pasteboardOverlayCanvas.style.height = `${pasteboardOverlayCanvas.height * scaleFactor}px`;
+        }
+        
+        function populateAssetLibraryGrid() {
+            document.getElementById('mg-asset-picker-grid').innerHTML = '';
+            
+            Array.from({ length: 104 }, (_, i) => i + 1).forEach(i => {
+                const src = `./assets/maker/${i}.png`;
+                const div = document.createElement('div');
+                div.className = 'mg-template';
+                div.innerHTML = `<img src="${src}" alt="Asset ${i}">`;
+                div.addEventListener('click', () => {
+                    handleNewAsset(src);
+                    closeAssetLibrary();
+                });
+                document.getElementById('mg-asset-picker-grid').appendChild(div);
+            });
+        }
+
+        function openAssetLibrary() {
+            if (!canvasState.backgroundElement) {
+                toast('Please set a background before adding layers.', 2000);
+                return;
+            }
+            populateAssetLibraryGrid();
+            assetLibraryOverlay.classList.add('visible');
+        }
+
+        function closeAssetLibrary() {
+            assetLibraryOverlay.classList.remove('visible');
+        }
+
+        function updateLayerInstructions() {
+            layerInstructions.classList.remove('placeholder-text');
+            if (!canvasState.backgroundElement) {
+                layerInstructions.textContent = "Add a background to begin.";
+                layerInstructions.classList.add('placeholder-text');
+            } else if (canvasState.layers.filter(l => l.type === 'image').length === 0) {
+                 layerInstructions.textContent = "Click '+' to add your first visual layer.";
+            } else {
+                 layerInstructions.textContent = "Click & drag layers to arrange and re-order them.";
+            }
+        }
+
+        function renderTextLayerPalette() {
+            textLayerPalette.innerHTML = '';
+            if (!canvasState.backgroundElement) return;
+
+            const textLayers = canvasState.layers.filter(l => l.type === 'text');
+            textLayers.forEach(layer => {
+                const thumb = document.createElement('div');
+                thumb.className = 'layer-thumb text-thumb';
+                thumb.classList.toggle('active', layer.id === activeLayerId);
+                thumb.dataset.layerId = layer.id;
+                thumb.title = "Click to select";
+                thumb.innerHTML = `<span>${layer.text.split('\n')[0] || "Empty"}</span><div class="layer-controls"><div class="layer-btn delete" title="Delete Layer">x</div></div>`;
+                thumb.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('layer-btn')) return;
+                     if (activeLayerId !== layer.id) deactivateEraser();
+                    activeLayerId = layer.id;
+                    renderLayerPalette();
+                    renderTextLayerPalette();
+                    updateEditPanelsUI();
+                    drawFrame();
+                });
+                thumb.querySelector('.delete').onclick = (e) => {
+                    e.stopPropagation();
+                    deleteMovieLayer(layer.id);
+                };
+                textLayerPalette.appendChild(thumb);
+            });
+        }
+        
+        function addDragAndDropHandlers(thumb) {
+            thumb.setAttribute('draggable', 'true');
+            thumb.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', thumb.dataset.layerId);
+                setTimeout(() => thumb.classList.add('dragging'), 0);
+            });
+            thumb.addEventListener('dragend', () => {
+                document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+                thumb.classList.remove('dragging');
+            });
+            thumb.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                if (document.querySelector('.dragging') !== thumb) {
+                    thumb.classList.add('drag-over');
+                }
+            });
+            thumb.addEventListener('dragleave', () => thumb.classList.remove('drag-over'));
+            thumb.addEventListener('drop', (e) => {
+                e.preventDefault();
+                thumb.classList.remove('drag-over');
+                const draggedId = e.dataTransfer.getData('text/plain');
+                const droppedOnId = thumb.dataset.layerId;
+                if (draggedId === droppedOnId) return;
+
+                const i1 = canvasState.layers.findIndex(l => l.id.toString() === draggedId);
+                const i2 = canvasState.layers.findIndex(l => l.id.toString() === droppedOnId);
+                if (i1 > -1 && i2 > -1) {
+                    const [item] = canvasState.layers.splice(i1, 1);
+                    canvasState.layers.splice(i2, 0, item);
+                    renderLayerPalette();
+                    updateTextOrderButtonsState?.();
+                    drawFrame();
+                }
+            });
+        }
+        
+        function renderLayerPalette() {
+            assetPalette.innerHTML = '';
+            updateLayerInstructions();
+
+            const hasBackground = !!canvasState.backgroundElement;
+            const visualLayers = hasBackground ? canvasState.layers.filter(l => l.type === 'image') : [];
+
+            visualLayers.forEach(layer => {
+                const thumb = document.createElement('div');
+                thumb.className = 'layer-thumb';
+                thumb.classList.toggle('active', layer.id === activeLayerId);
+                thumb.dataset.layerId = layer.id;
+
+                let thumbSrc = '';
+                try { thumbSrc = layer.proxyCanvas.toDataURL(); } catch (e) { thumbSrc = ''; }
+                thumb.innerHTML = `${thumbSrc ? `<img src="${thumbSrc}">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;">(loading)</div>'}
+                <div class="layer-controls"><div class="layer-btn delete" title="Delete Layer">x</div></div>`;
+
+                addDragAndDropHandlers(thumb);
+                thumb.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('layer-btn')) return;
+                    if (activeLayerId !== layer.id) deactivateEraser();
+                    activeLayerId = layer.id;
+                    renderLayerPalette();
+                    renderTextLayerPalette();
+                    updateEditPanelsUI();
+                    drawFrame();
+                });
+                thumb.querySelector('.delete').onclick = (e) => {
+                    e.stopPropagation();
+                    deleteMovieLayer(layer.id);
+                };
+                assetPalette.appendChild(thumb);
+            });
+
+            const emptySlot = document.createElement('button');
+            emptySlot.className = 'palette-slot empty';
+            emptySlot.innerHTML = '+';
+            emptySlot.title = hasBackground ? 'Add a new image asset' : 'Add a background to enable layers';
+            emptySlot.disabled = !hasBackground;
+            if (hasBackground) {
+                emptySlot.onclick = openAssetLibrary;
+            }
+            assetPalette.appendChild(emptySlot);
+        }
+
+        function updateAssetVisualsUI() {
+            const activeLayer = getActiveLayer();
+            if (activeLayer && activeLayer.type === 'image') {
+                assetVisualsControls.classList.remove('disabled');
+                assetOpacitySlider.value = activeLayer.opacity;
+                assetBrightnessSlider.value = activeLayer.brightness;
+                assetSaturationSlider.value = activeLayer.saturation;
+
+                document.getElementById('shadow-enable').checked = activeLayer.shadow.enabled;
+                document.getElementById('shadow-controls').classList.toggle('disabled', !activeLayer.shadow.enabled);
+                document.getElementById('shadow-color').value = activeLayer.shadow.color;
+                document.getElementById('shadow-blur').value = activeLayer.shadow.blur;
+                document.getElementById('shadow-offset-x').value = activeLayer.shadow.offsetX;
+                document.getElementById('shadow-offset-y').value = activeLayer.shadow.offsetY;
+
+                document.getElementById('border-enable').checked = activeLayer.border.enabled;
+                document.getElementById('border-controls').classList.toggle('disabled', !activeLayer.border.enabled);
+                document.getElementById('border-color').value = activeLayer.border.color;
+                document.getElementById('border-width').value = activeLayer.border.width;
+                
+                removeBgBtn.disabled = false;
+            } else {
+                assetVisualsControls.classList.add('disabled');
+                removeBgBtn.disabled = true;
+            }
+        }
+
+        function updateTextVisualsUI() {
+            const activeLayer = getActiveLayer();
+            if (activeLayer && activeLayer.type === 'text') {
+                textVisualsControls.classList.remove('disabled');
+                textContentInput.value = activeLayer.text;
+                textFontSelect.value = activeLayer.font;
+                textSizeSlider.value = activeLayer.fontSize;
+                textColorInput.value = activeLayer.color;
+                textStrokeColorInput.value = activeLayer.strokeColor;
+                textStrokeWidthSlider.value = activeLayer.strokeWidth;
+            } else {
+                textVisualsControls.classList.add('disabled');
+            }
+        }
+
+        function updateBackgroundVisualsUI() {
+            bgBrightnessSlider.value = canvasState.bgBrightness;
+            bgSaturationSlider.value = canvasState.bgSaturation;
+        }
+
+        function updateEditPanelsUI() {
+            updateAssetVisualsUI();
+            updateTextVisualsUI();
+            updateBackgroundVisualsUI();
+            updateEraseHistoryButtons();
+            updateTextOrderButtonsState();
+        }
+
+        function addTextLayer() {
+            if (!canvasState.backgroundElement) {
+                toast('Add a background first.', 2000);
+                return;
+            }
+            const newTextLayer = {
+                id: (Date.now() + Math.random()).toString(),
+                type: 'text', text: 'New Text', font: "'VT323', monospace",
+                fontSize: 150, color: '#FFFFFF', strokeColor: '#000000', strokeWidth: 0,
+                x: movieCanvas.width / 2, y: movieCanvas.height / 2,
+                rot: 0, flipX: false, opacity: 1, brightness: 1, saturation: 1,
+                width: 0, height: 0,
+                shadow: { enabled: false, color: '#000000', blur: 10, offsetX: 10, offsetY: 10 },
+                border: { enabled: false, color: '#FFFFFF', width: 4 },
+                createdAt: Date.now()
+            };
+            canvasState.layers.unshift(newTextLayer);
+            activeLayerId = newTextLayer.id;
+            deactivateEraser();
+            renderLayerPalette();
+            renderTextLayerPalette();
+            updateControlsState();
+            updateEditPanelsUI();
+            triggerAnimatedRender();
+            toast('Text layer added!', 2000);
+            textContentInput.focus();
+            textContentInput.select();
+        }
+
+        function deleteMovieLayer(layerId) {
+            canvasState.layers = canvasState.layers.filter(l => l.id !== layerId);
+            if (activeLayerId === layerId) {
+                activeLayerId = null;
+                 deactivateEraser();
+            }
+            renderLayerPalette();
+            renderTextLayerPalette();
+            updateControlsState();
+            updateEditPanelsUI();
+            drawFrame();
+        }
+        
+        function getTextBlockMetrics(ctx, text, font, fontSize) {
+            ctx.save();
+            ctx.font = `${fontSize}px ${font}`;
+            const lines = text.split('\n');
+            const lineHeight = fontSize * 1.2;
+            let maxWidth = 0;
+            lines.forEach(line => {
+                const lineWidth = ctx.measureText(line).width;
+                if (lineWidth > maxWidth) maxWidth = lineWidth;
+            });
+            const totalHeight = lines.length * lineHeight;
+            ctx.restore();
+            return { lines, lineHeight, maxWidth, totalHeight };
+        }
+        
+        function nudgeLayerZ(layerId, delta) {
+            const i = canvasState.layers.findIndex(l => l.id === layerId);
+            if (i === -1) return false;
+            const j = i + delta;
+            if (j < 0 || j >= canvasState.layers.length) return false;
+            const [item] = canvasState.layers.splice(i, 1);
+            canvasState.layers.splice(j, 0, item);
+            return true;
+        }
+
+        function drawLayers(ctx, layers, isFinalRender = false) {
+             for (let i = layers.length - 1; i >= 0; i--) {
+                const l = layers[i];
+                ctx.save();
+                
+                const age = Date.now() - l.createdAt;
+                let animationProgress = 1;
+                if (!isFinalRender && age < FADE_IN_DURATION) {
+                    animationProgress = age / FADE_IN_DURATION;
+                }
+
+                const filters = `brightness(${l.brightness}) saturate(${l.saturation})`;
+                const shadow = l.shadow.enabled ? `drop-shadow(${l.shadow.offsetX}px ${l.shadow.offsetY}px ${l.shadow.blur}px ${l.shadow.color})` : '';
+                
+                let borderFilters = '';
+                if (l.border.enabled && l.border.width > 0) {
+                    const w = l.border.width;
+                    const c = l.border.color;
+                    borderFilters = `drop-shadow(${w}px ${w}px 0 ${c}) drop-shadow(-${w}px -${w}px 0 ${c}) drop-shadow(-${w}px ${w}px 0 ${c}) drop-shadow(${w}px -${w}px 0 ${c})`;
+                }
+
+                ctx.filter = `${borderFilters} ${shadow} ${filters}`.trim();
+                ctx.globalAlpha = l.opacity * animationProgress;
+                
+                ctx.translate(l.x, l.y);
+                ctx.rotate(l.rot * Math.PI / 180);
+
+                const scaleFactor = 0.95 + 0.05 * animationProgress;
+                if (animationProgress < 1) {
+                    ctx.scale(scaleFactor, scaleFactor);
+                }
+                
+                if (l.flipX) ctx.scale(-1, 1);
+
+                if (l.type === 'image') {
+                    const asset = l.proxyCanvas;
+                    const assetWidth = asset.width;
+                    const assetHeight = asset.height;
+                    if (assetWidth > 0) {
+                        const dWidth = l.size;
+                        const dHeight = l.size * (assetHeight / assetWidth);
+                        ctx.drawImage(asset, -dWidth / 2, -dHeight / 2, dWidth, dHeight);
+                    }
+                } else if (l.type === 'text') {
+                    ctx.font = `${l.fontSize}px ${l.font}`;
+                    ctx.fillStyle = l.color;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    if (l.strokeWidth > 0) {
+                        ctx.strokeStyle = l.strokeColor;
+                        ctx.lineWidth = l.strokeWidth;
+                    }
+                    const metrics = getTextBlockMetrics(ctx, l.text, l.font, l.fontSize);
+                    if (!isFinalRender) {
+                        l.width = metrics.maxWidth;
+                        l.height = metrics.totalHeight;
+                    }
+                    const startY = -metrics.totalHeight / 2 + metrics.lineHeight / 2 - (l.fontSize * 0.1);
+                    metrics.lines.forEach((line, index) => {
+                        if (l.strokeWidth > 0) ctx.strokeText(line, 0, startY + (index * metrics.lineHeight));
+                        ctx.fillText(line, 0, startY + (index * metrics.lineHeight));
+                    });
+                }
+                ctx.restore();
+            }
+        }
+
+        function animationRenderLoop() {
+            if (!isAnimatingRender) return;
+            const stillAnimating = canvasState.layers.some(l => (Date.now() - l.createdAt) < FADE_IN_DURATION);
+            if (stillAnimating) {
+                drawFrame();
+                requestAnimationFrame(animationRenderLoop);
+            } else {
+                isAnimatingRender = false;
+                if (!movieInteraction.active) {
+                    drawFrame();
+                }
+            }
+        }
+
+        function triggerAnimatedRender() {
+            if (isAnimatingRender || movieInteraction.active) return;
+            isAnimatingRender = true;
+            animationRenderLoop();
+        }
+
+        function drawFrame() {
+            if (!canvasState.backgroundElement) {
+                movieCtx.clearRect(0, 0, movieCanvas.width, movieCanvas.height);
+                return;
+            }
+            movieCtx.clearRect(0, 0, movieCanvas.width, movieCanvas.height);
+            movieCtx.save();
+            movieCtx.filter = `brightness(${canvasState.bgBrightness}) saturate(${canvasState.bgSaturation})`;
+            movieCtx.drawImage(canvasState.backgroundElement, 0, 0, movieCanvas.width, movieCanvas.height);
+            movieCtx.restore();
+            
+            drawLayers(movieCtx, canvasState.layers);
+
+            drawControlsOverlay();
+        }
+        
+        function startRenderLoop() {
+            if (animationFrameId) return;
+            function loop() {
+                drawFrame();
+                animationFrameId = requestAnimationFrame(loop);
+            }
+            loop();
+        }
+        
+        function stopRenderLoop() {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+            drawFrame();
+        }
+
+        function drawControlsOverlay() {
+            const ctx = isCanvasViewZoomedOut ? pasteboardCtx : controlsCtx;
+            const canvas = isCanvasViewZoomedOut ? pasteboardOverlayCanvas : controlsOverlayCanvas;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (eraserMode !== 'none') {
+                const canvasPoint = getMovieCanvasPoint({clientX: eraseBrushPos.x + movieCanvas.getBoundingClientRect().left, clientY: eraseBrushPos.y + movieCanvas.getBoundingClientRect().top});
+                ctx.save();
+                if (isCanvasViewZoomedOut) ctx.translate(PASTEBOARD_MARGIN, PASTEBOARD_MARGIN);
+                
+                const brushColor = eraserMode === 'unerase' ? 'rgba(85, 204, 85, 0.9)' : 'white';
+                ctx.beginPath();
+                ctx.arc(canvasPoint.x, canvasPoint.y, eraserSizeSlider.value / 2, 0, 2 * Math.PI);
+                ctx.strokeStyle = brushColor;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(canvasPoint.x, canvasPoint.y, eraserSizeSlider.value / 2, 0, 2 * Math.PI);
+                ctx.setLineDash([5, 5]);
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                ctx.restore();
+            }
+
+            const activeLayer = getActiveLayer();
+            if (!activeLayer || eraserMode !== 'none') return;
+
+            ctx.save();
+            if (isCanvasViewZoomedOut) ctx.translate(PASTEBOARD_MARGIN, PASTEBOARD_MARGIN);
+
+            let dWidth, dHeight;
+            if (activeLayer.type === 'image') {
+                const assetWidth  = activeLayer.proxyCanvas?.width  || activeLayer.asset?.naturalWidth  || 0;
+                const assetHeight = activeLayer.proxyCanvas?.height || activeLayer.asset?.naturalHeight || 0;
+                if (!assetWidth || !assetHeight) { ctx.restore(); return; }
+                dWidth = activeLayer.size;
+                dHeight = activeLayer.size * (assetHeight / assetWidth);
+            } else {
+                dWidth = activeLayer.width;
+                dHeight = activeLayer.height;
+            }
+
+            const HANDLE_SIZE = 16;
+            const ho = HANDLE_SIZE / 2;
+            const ROTATION_HANDLE_OFFSET = 30;
+
+            ctx.save();
+            ctx.translate(activeLayer.x, activeLayer.y);
+            ctx.rotate(activeLayer.rot * Math.PI / 180);
+
+            ctx.strokeStyle = '#00FF00';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(-dWidth / 2, -dHeight / 2, dWidth, dHeight);
+
+            ctx.fillStyle = '#00FF00';
+            ctx.fillRect(-dWidth / 2 - ho, -dHeight / 2 - ho, HANDLE_SIZE, HANDLE_SIZE);
+            ctx.fillRect(dWidth / 2 - ho, -dHeight / 2 - ho, HANDLE_SIZE, HANDLE_SIZE);
+            ctx.fillRect(-dWidth / 2 - ho, dHeight / 2 - ho, HANDLE_SIZE, HANDLE_SIZE);
+            ctx.fillRect(dWidth / 2 - ho, dHeight / 2 - ho, HANDLE_SIZE, HANDLE_SIZE);
+
+            const rotHandleY = -dHeight / 2 - ROTATION_HANDLE_OFFSET;
+            ctx.beginPath();
+            ctx.moveTo(0, -dHeight / 2);
+            ctx.lineTo(0, rotHandleY);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(0, rotHandleY, HANDLE_SIZE / 2, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.restore(); 
+            ctx.restore(); 
+        }
+
+        function toggleCanvasZoom() {
+            isCanvasViewZoomedOut = !isCanvasViewZoomedOut;
+            canvasPanel.classList.toggle('is-zoomed-out', isCanvasViewZoomedOut);
+            toggleViewBtn.textContent = isCanvasViewZoomedOut ? '⛶' : '⬚';
+            toggleViewBtn.title = isCanvasViewZoomedOut ? 'Reset Canvas View (Z)' : 'Zoom Out Canvas (Z)';
+        }
+
+        function downloadImage() {
+            if (!canvasState.backgroundElement) {
+                toast("Add a background before downloading.", 3000);
+                return;
+            }
+            
+            toast("Preparing high-quality image...", null);
+            
+            setTimeout(() => {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = masterWidth;
+                tempCanvas.height = masterHeight;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.imageSmoothingEnabled = true;
+                tempCtx.imageSmoothingQuality = 'high';
+
+                tempCtx.save();
+                tempCtx.filter = `brightness(${canvasState.bgBrightness}) saturate(${canvasState.bgSaturation})`;
+                tempCtx.drawImage(canvasState.backgroundElement, 0, 0, masterWidth, masterHeight);
+                tempCtx.restore();
+
+                drawLayers(tempCtx, canvasState.layers, true);
+
+                const link = document.createElement('a');
+                link.download = 'image-maker-creation.png';
+                link.href = tempCanvas.toDataURL('image/png');
+                link.click();
+                toast("Image download started!", 4000);
+            }, 100); 
+        }
+
+        function showEraserZoom(show){ eraserZoomCanvas.style.display = show ? 'block' : 'none'; }
+        function showEraserHUD(show){ eraserHud.style.display = show ? 'block' : 'none'; }
+
+        function refreshMiniHudLabels(){
+          // Button text reflects current mode
+          eraserToggleBtn.textContent = (eraserMode === 'unerase') ? 'Unerase' : 'Erase';
+          // Keep size slider in sync
+          eraserSizeMini.value = String(eraserSizeSlider.value);
+        }
+
+        function lerp(a,b,t){ return a+(b-a)*Math.min(1,Math.max(0,t)); }
+        function computeZoomUiSize(brush){
+          const t = (brush - BRUSH_MIN) / (BRUSH_MAX - BRUSH_MIN);
+          return Math.round(lerp(UI_MIN_PX, UI_MAX_PX, t));
+        }
+
+        function drawEraserZoomAt(canvasPoint){
+          if (!canvasState.backgroundElement) return;
+
+          const brush = Math.max(5, Number(eraserSizeSlider.value));
+
+          // UI window scales with brush (small brush = small box, big brush = big box)
+          const uiPx = computeZoomUiSize(brush);
+          if (eraserZoomCanvas.width !== uiPx || eraserZoomCanvas.height !== uiPx){
+            eraserZoomCanvas.width = uiPx;
+            eraserZoomCanvas.height = uiPx;
+            eraserZoomCanvas.style.width = uiPx + 'px';
+            eraserZoomCanvas.style.height = uiPx + 'px';
+            // keep HUD sitting just above the zoom window
+            eraserHud.style.bottom = (12 + uiPx + 12) + 'px';
+          }
+
+          // Keep the circle ~constant size inside the zoom window
+          let targetR = Math.min(TARGET_RADIUS_PX, uiPx/2 - MIN_MARGIN_PREVIEW);
+
+          // Source window size to achieve that circle size
+          // rZoom = (brush/2) * (uiPx / sw)  =>  sw = (brush/2) * (uiPx / rZoom)
+          let sw = (brush * uiPx) / (2 * targetR);
+          let sh = sw; // square zoom window
+
+          // Never let the preview feel less zoomed than the main canvas
+          const rect = movieCanvas.getBoundingClientRect();
+          const mainScale = rect.width / movieCanvas.width;     // CSS px per source px (main)
+          const factor    = uiPx / sw;                          // CSS px per source px (preview)
+          const minFactor = mainScale * MIN_ZOOM_FEEL;
+          if (factor < minFactor){
+            sw = uiPx / minFactor;
+            sh = sw;
+            // circle will shrink a bit but the preview remains clearly zoomed in
+          }
+
+          // Clamp to canvas dimensions
+          sw = Math.min(sw, movieCanvas.width);
+          sh = Math.min(sh, movieCanvas.height);
+
+          // Center on brush, clamp edges
+          let sx = canvasPoint.x - sw / 2;
+          let sy = canvasPoint.y - sh / 2;
+          sx = Math.max(0, Math.min(movieCanvas.width  - sw, sx));
+          sy = Math.max(0, Math.min(movieCanvas.height - sh, sy));
+
+          // Draw the magnified region
+          eraserZoomCtx.clearRect(0,0,uiPx,uiPx);
+          eraserZoomCtx.imageSmoothingEnabled = true;
+          eraserZoomCtx.imageSmoothingQuality = 'high';
+          eraserZoomCtx.drawImage(movieCanvas, sx, sy, sw, sh, 0, 0, uiPx, uiPx);
+
+          // Circle overlay (stays roughly same pixel size in the preview)
+          const scale = uiPx / sw;
+          const rZoom = (brush / 2) * scale;
+          const cx = (canvasPoint.x - sx) * scale;
+          const cy = (canvasPoint.y - sy) * scale;
+
+          eraserZoomCtx.save();
+          eraserZoomCtx.beginPath();
+          eraserZoomCtx.arc(cx, cy, rZoom, 0, Math.PI*2);
+          eraserZoomCtx.strokeStyle = (eraserMode === 'unerase') ? 'rgba(85, 204, 85, 0.9)' : '#ffffff';
+          eraserZoomCtx.lineWidth = 2;
+          eraserZoomCtx.stroke();
+
+          eraserZoomCtx.setLineDash([5,5]);
+          eraserZoomCtx.strokeStyle = '#000000';
+          eraserZoomCtx.lineWidth = 1;
+          eraserZoomCtx.beginPath();
+          eraserZoomCtx.arc(cx, cy, rZoom, 0, Math.PI*2);
+          eraserZoomCtx.stroke();
+          eraserZoomCtx.restore();
+        }
+
+        function getMovieCanvasPoint(e) {
+            const movieCanvasRect = movieCanvas.getBoundingClientRect();
+            const scaleX = movieCanvas.width / movieCanvasRect.width;
+            const scaleY = movieCanvas.height / movieCanvasRect.height;
+            return {
+                x: (e.clientX - movieCanvasRect.left) * scaleX,
+                y: (e.clientY - movieCanvasRect.top) * scaleY
+            };
+        }
+        
+        function applyBrushToLayer(layer, canvasPoint) {
+            if (!layer || layer.type !== 'image' || !layer.proxyCtx) return;
+
+            const dx = canvasPoint.x - layer.x;
+            const dy = canvasPoint.y - layer.y;
+            const angle = -layer.rot * Math.PI / 180;
+            const localX = dx * Math.cos(angle) - dy * Math.sin(angle);
+            const localY = dx * Math.sin(angle) + dy * Math.cos(angle);
+
+            const assetWidth = layer.proxyCanvas.width;
+            const assetHeight = layer.proxyCanvas.height;
+            const layerRenderWidth = layer.size;
+            const layerRenderHeight = layer.size * (assetHeight / assetWidth);
+
+            const proxyX = (localX + layerRenderWidth / 2) * (assetWidth / layerRenderWidth);
+            const proxyY = (localY + layerRenderHeight / 2) * (assetHeight / layerRenderHeight);
+            const brushSize = eraserSizeSlider.value * (assetWidth / layerRenderWidth);
+
+            const ctx = layer.proxyCtx;
+            ctx.save();
+
+            if (eraserMode === 'unerase') {
+                ctx.beginPath();
+                if (movieInteraction.lastProxyX !== null && movieInteraction.lastProxyY !== null) {
+                    const last = { x: movieInteraction.lastProxyX, y: movieInteraction.lastProxyY };
+                    const current = { x: proxyX, y: proxyY };
+                    const dist = Math.hypot(current.x - last.x, current.y - last.y);
+                    const angle = Math.atan2(current.y - last.y, current.x - last.x);
+                    const step = Math.min(brushSize / 4, 10);
+                    for (let i = 0; i < dist; i += step) {
+                        const x = last.x + Math.cos(angle) * i;
+                        const y = last.y + Math.sin(angle) * i;
+                        ctx.moveTo(x, y);
+                        ctx.arc(x, y, brushSize / 2, 0, Math.PI * 2);
+                    }
+                } else {
+                    ctx.arc(proxyX, proxyY, brushSize / 2, 0, 2 * Math.PI);
+                }
+                ctx.clip();
+                ctx.globalAlpha = eraserOpacitySlider.value;
+                ctx.drawImage(layer.asset, 0, 0);
+            } else {
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.lineWidth = brushSize;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.globalAlpha = eraserOpacitySlider.value;
+                ctx.beginPath();
+                if (movieInteraction.lastProxyX !== null && movieInteraction.lastProxyY !== null) {
+                    ctx.moveTo(movieInteraction.lastProxyX, movieInteraction.lastProxyY);
+                    ctx.lineTo(proxyX, proxyY);
+                    ctx.stroke();
+                } else {
+                    ctx.arc(proxyX, proxyY, brushSize / 2, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            }
+            
+            movieInteraction.lastProxyX = proxyX;
+            movieInteraction.lastProxyY = proxyY;
+
+            ctx.restore();
+            drawFrame();
+
+            lastEraseCanvasPoint = canvasPoint;
+            if (movieInteraction.active && movieInteraction.type === 'erase') {
+              drawEraserZoomAt(canvasPoint);
+            }
+        }
+
+        function resetErasing() {
+            const layer = getActiveLayer();
+            if (layer && layer.type === 'image') {
+                layer.proxyCtx.clearRect(0, 0, layer.proxyCanvas.width, layer.proxyCanvas.height);
+                layer.proxyCtx.drawImage(layer.asset, 0, 0);
+                layer.undoStack = [];
+                updateEraseHistoryButtons();
+                drawFrame();
+                renderLayerPalette();
+                toast('Layer reset to original!', 2000);
+            }
+        }
+
+        function updateEraseHistoryButtons() {
+            const layer = getActiveLayer();
+            if (layer && layer.type === 'image') {
+                undoEraseBtn.disabled = layer.undoStack.length === 0;
+            } else {
+                undoEraseBtn.disabled = true;
+            }
+        }
+
+        function undoErasing() {
+            const layer = getActiveLayer();
+            if (!layer || layer.type !== 'image' || layer.undoStack.length === 0) return;
+            
+            const undoData = layer.undoStack.pop();
+            layer.proxyCtx.putImageData(undoData, 0, 0);
+            
+            updateEraseHistoryButtons();
+            drawFrame();
+            renderLayerPalette();
+        }
+        
+        function handleMovieInteractionStart(e) {
+            e.preventDefault();
+            const point = getMovieCanvasPoint(e);
+
+            if (isEraserArmed) {
+                isEraserArmed = false;
+                toast(eraserMode === 'erase' ? 'Erase Mode Active' : 'Unerase Mode Active', null);
+                return; 
+            }
+            
+            if (eraserMode !== 'none') {
+                const activeLayer = getActiveLayer();
+                if (isPointInMovieLayer(point, activeLayer)) {
+                     movieInteraction = { active: true, type: 'erase', layerId: activeLayer.id, lastProxyX: null, lastProxyY: null };
+                     activeLayer.undoStack.push(activeLayer.proxyCtx.getImageData(0, 0, activeLayer.proxyCanvas.width, activeLayer.proxyCanvas.height));
+                     updateEraseHistoryButtons();
+                     lastEraseCanvasPoint = point;
+                     showEraserZoom(true);
+                     drawEraserZoomAt(point);
+                     applyBrushToLayer(activeLayer, point);
+                } else {
+                    deactivateEraser();
+                }
+                return;
+            }
+
+            let interactionFound = false;
+            const activeLayer = getActiveLayer();
+            if (activeLayer) {
+                const handle = getMovieHandleAtPoint(point, activeLayer);
+                if (handle) {
+                    interactionFound = true;
+                    movieInteraction = {
+                        active: true, type: handle === 'rotate' ? 'rotate' : 'resize',
+                        layerId: activeLayer.id, handle: handle,
+                        startX: point.x, startY: point.y,
+                        initialState: JSON.parse(JSON.stringify(activeLayer))
+                    };
+                } else if (isPointInMovieLayer(point, activeLayer)) {
+                    interactionFound = true;
+                    movieInteraction = {
+                        active: true, type: 'drag', layerId: activeLayer.id,
+                        offsetX: point.x - activeLayer.x, offsetY: point.y - activeLayer.y,
+                    };
+                }
+            }
+
+            if (!interactionFound) {
+                for (let i = 0; i < canvasState.layers.length; i++) {
+                    const l = canvasState.layers[i];
+                    if (isPointInMovieLayer(point, l)) {
+                        activeLayerId = l.id;
+                        renderLayerPalette(); renderTextLayerPalette(); updateEditPanelsUI();
+                        movieInteraction = { active: true, type: 'drag', layerId: l.id, offsetX: point.x - l.x, offsetY: point.y - l.y };
+                        interactionFound = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (!interactionFound && activeLayerId) {
+                activeLayerId = null;
+                updateEditPanelsUI();
+                renderLayerPalette();
+                renderTextLayerPalette();
+                drawFrame();
+            }
+
+            if(interactionFound) startRenderLoop();
+        }
+
+        function getMovieHandleAtPoint(point, layer) {
+            const l = layer;
+            let dWidth, dHeight;
+             if (l.type === 'image') {
+                const assetWidth  = l.proxyCanvas?.width  || l.asset?.naturalWidth  || 0;
+                const assetHeight = l.proxyCanvas?.height || l.asset?.naturalHeight || 0;
+                if (!assetWidth || !assetHeight) return null;
+                dWidth = l.size;
+                dHeight = l.size * (assetHeight / assetWidth);
+            } else {
+                dWidth = l.width;
+                dHeight = l.height;
+            }
+
+            const radius = 20;
+            const angle = l.rot * Math.PI / 180;
+            const cos = Math.cos(angle);
+            const sin = Math.sin(angle);
+            const ROTATION_HANDLE_OFFSET = 30;
+
+            const rotHandleY = -dHeight / 2 - ROTATION_HANDLE_OFFSET;
+            const rotatedRotHandleX = l.x + (0 * cos - rotHandleY * sin);
+            const rotatedRotHandleY = l.y + (0 * sin + rotHandleY * cos);
+            if (Math.hypot(point.x - rotatedRotHandleX, point.y - rotatedRotHandleY) < radius) return 'rotate';
+
+            const handles = {
+                tl: {x: -dWidth / 2, y: -dHeight / 2}, tr: {x: dWidth / 2, y: -dHeight / 2},
+                bl: {x: -dWidth / 2, y: dHeight / 2}, br: {x: dWidth / 2, y: dHeight / 2}
+            };
+            for (const name in handles) {
+                const h = handles[name];
+                const handleWorldX = l.x + h.x * cos - h.y * sin;
+                const handleWorldY = l.y + h.x * sin + h.y * cos;
+                if (Math.hypot(point.x - handleWorldX, point.y - handleWorldY) < radius) return name;
+            }
+            return null;
+        }
+
+        function isPointInMovieLayer(point, layer) {
+            if (!layer) return false;
+            const l = layer;
+            let dWidth, dHeight;
+
+            if (l.type === 'image') {
+                const assetWidth  = l.proxyCanvas?.width  || l.asset?.naturalWidth  || 0;
+                const assetHeight = l.proxyCanvas?.height || l.asset?.naturalHeight || 0;
+                if (assetWidth === 0) return false;
+                dWidth  = l.size;
+                dHeight = l.size * (assetHeight / assetWidth);
+            } else if (l.type === 'text') {
+                if (!l.width || !l.height) {
+                    const m = getTextBlockMetrics(movieCtx, l.text, l.font, l.fontSize);
+                    l.width = m.maxWidth;
+                    l.height = m.totalHeight;
+                }
+                dWidth = l.width;
+                dHeight = l.height;
+            } else {
+                return false;
+            }
+
+            const dx = point.x - l.x;
+            const dy = point.y - l.y;
+            const angle = -l.rot * Math.PI / 180;
+            const localX = dx * Math.cos(angle) - dy * Math.sin(angle);
+            const localY = dx * Math.sin(angle) + dy * Math.cos(angle);
+
+            return (Math.abs(localX) < dWidth / 2 && Math.abs(localY) < dHeight / 2);
+        }
+
+        function handleMovieInteractionMove(e) {
+            const point = getMovieCanvasPoint(e);
+            eraseBrushPos = { x: e.clientX - movieCanvas.getBoundingClientRect().left, y: e.clientY - movieCanvas.getBoundingClientRect().top };
+            
+            if (!movieInteraction.active) {
+                updateCursor(e);
+                 if(eraserMode !== 'none') {
+                    drawControlsOverlay();
+                }
+                return;
+            }
+            e.preventDefault();
+            const l = getActiveLayer();
+            if (!l) return;
+
+            if (movieInteraction.type === 'erase') {
+                applyBrushToLayer(l, point);
+                drawEraserZoomAt(point);
+                return;
+            }
+
+            if (movieInteraction.type === 'drag') {
+                l.x = point.x - movieInteraction.offsetX;
+                l.y = point.y - movieInteraction.offsetY;
+            } else if (movieInteraction.type === 'resize') {
+                const iState = movieInteraction.initialState;
+                const initialDist = Math.hypot(movieInteraction.startX - iState.x, movieInteraction.startY - iState.y);
+                const currentDist = Math.hypot(point.x - iState.x, point.y - iState.y);
+                if (initialDist > 1) {
+                    const scaleFactor = currentDist / initialDist;
+                    if (l.type === 'text') {
+                        l.fontSize = Math.max(10, iState.fontSize * scaleFactor);
+                        textSizeSlider.value = l.fontSize;
+                    } else {
+                        l.size = Math.max(20, iState.size * scaleFactor);
+                    }
+                }
+            } else if (movieInteraction.type === 'rotate') {
+                const iState = movieInteraction.initialState;
+                const initialAngle = Math.atan2(movieInteraction.startY - iState.y, movieInteraction.startX - iState.x) * 180 / Math.PI;
+                const currentAngle = Math.atan2(point.y - iState.y, point.x - iState.x) * 180 / Math.PI;
+                l.rot = iState.rot + (currentAngle - initialAngle);
+            }
+        }
+
+        function handleMovieInteractionEnd(e) {
+          if (movieInteraction.active) {
+            showEraserZoom(false);
+            if (movieInteraction.type === 'erase') {
+              renderLayerPalette();
+              updateEraseHistoryButtons();
+            }
+            movieInteraction.active = false;
+            stopRenderLoop();
+          }
+        }
+
+        function updateCursor(e) {
+            if (eraserMode !== 'none') {
+                movieCanvas.classList.add('erase-cursor');
+                return;
+            }
+            movieCanvas.classList.remove('erase-cursor');
+            
+            const point = getMovieCanvasPoint(e);
+            let newCursor = 'default';
+            const activeLayer = getActiveLayer();
+
+            if (activeLayer) {
+                const handle = getMovieHandleAtPoint(point, activeLayer);
+                if (handle) {
+                    newCursor = handle === 'rotate' ? 'grab' : (handle === 'tl' || handle === 'br' ? 'nwse-resize' : 'nesw-resize');
+                } else if (isPointInMovieLayer(point, activeLayer)) {
+                    newCursor = 'move';
+                }
+            }
+
+            if (newCursor === 'default') {
+                for (let i = 0; i < canvasState.layers.length; i++) {
+                    if (isPointInMovieLayer(point, canvasState.layers[i])) {
+                        newCursor = 'pointer'; 
+                        break;
+                    }
+                }
+            }
+            movieCanvas.style.cursor = newCursor;
+        }
+
+        function handleKeyDown(e) {
+            const key = e.key.toLowerCase();
+            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+                if (key === 'escape') document.activeElement.blur();
+                return;
+            }
+
+            if (key === 'z') { e.preventDefault(); toggleCanvasZoom(); return; }
+            if (key === 'escape' && eraserMode !== 'none') {
+                e.preventDefault();
+                deactivateEraser();
+                return;
+            }
+            
+            const activeLayer = getActiveLayer();
+            if (!activeLayer) return;
+
+            if (key === 'q' || key === 'w') {
+                e.preventDefault();
+                const moved = nudgeLayerZ(activeLayer.id, key === 'q' ? -1 : +1);
+                if (moved) {
+                    renderLayerPalette();
+                    renderTextLayerPalette();
+                    updateTextOrderButtonsState?.();
+                    drawFrame();
+                }
+                return;
+            }
+
+            if (key === 's') { e.preventDefault(); activeLayer.flipX = !activeLayer.flipX; } 
+            else if (key === 'delete' || key === 'backspace') {
+                e.preventDefault();
+                deleteMovieLayer(activeLayer.id);
+                toast('Layer deleted', 2000);
+            }
+            drawFrame();
+        }
+
+        function clearCanvas() {
+            canvasState = { backgroundElement: null, backgroundType: 'none', bgBrightness: 1, bgSaturation: 1, layers: [] };
+            activeLayerId = null;
+            deactivateEraser();
+            movieCtx.clearRect(0, 0, movieCanvas.width, movieCanvas.height);
+            controlsCtx.clearRect(0, 0, controlsOverlayCanvas.width, controlsOverlayCanvas.height);
+            canvasPlaceholder.classList.remove('hidden');
+            updateControlsState();
+            updateEditPanelsUI();
+            toast("Canvas cleared.", 2000);
+        }
+
+        function deactivateEraser(shouldCloseDropdown = false) {
+            if (eraserMode === 'none') return;
+            showEraserHUD(false);
+            showEraserZoom(false);
+            eraserMode = 'none';
+            isEraserArmed = false;
+            eraserControlsWrapper.classList.add('disabled');
+            eraseBtn.classList.remove('active');
+            uneraseBtn.classList.remove('active');
+            eraseToolBtn.classList.remove('active');
+            movieCanvas.classList.remove('erase-cursor');
+            hideToast();
+            drawFrame();
+            if (shouldCloseDropdown) {
+                eraseToolDropdown.classList.remove('visible');
+            }
+        }
+
+        function toggleEraserMode(mode) {
+            const activeLayer = getActiveLayer();
+            if (!activeLayer) {
+                toast('Select an image layer to use the eraser.', 3000);
+                return;
+            }
+            if (activeLayer.type !== 'image') {
+                toast('Eraser only works on image layers.', 3000);
+                return;
+            }
+            if (eraserMode === mode) {
+                deactivateEraser(false);
+                return;
+            }
+            eraserMode = mode;
+            isEraserArmed = true;
+            eraserControlsWrapper.classList.remove('disabled');
+            eraseBtn.classList.toggle('active', mode === 'erase');
+            uneraseBtn.classList.toggle('active', mode === 'unerase');
+            eraseToolBtn.classList.add('active');
+            eraseToolDropdown.classList.remove('visible');
+            movieCanvas.classList.add('erase-cursor');
+            toast(mode === 'erase' ? 'Erase Mode: Click on canvas to start' : 'Unerase Mode: Click on canvas to start', null);
+            [visualsDropdown, textDropdown, shortcutsDropdown, backgroundRemoverDropdown].forEach(d => d.classList.remove('visible'));
+            showEraserHUD(true);
+            refreshMiniHudLabels();
+        }
+
+        let confirmCallback = null;
+        function openConfirmationModal(text, onConfirm) {
+            confirmationText.textContent = text;
+            confirmCallback = onConfirm;
+            confirmationOverlay.classList.add('visible');
+        }
+        function closeConfirmationModal() {
+            confirmationOverlay.classList.remove('visible');
+            confirmCallback = null;
+        }
+
+        function updateTextOrderButtonsState() {
+            const textMoveBackBtn    = document.getElementById('text-move-back');
+            const textMoveForwardBtn = document.getElementById('text-move-forward');
+            if (!textMoveBackBtn || !textMoveForwardBtn) return;
+            const l = getActiveLayer();
+            if (!l || l.type !== 'text') {
+                textMoveBackBtn.disabled = true;
+                textMoveForwardBtn.disabled = true;
+                return;
+            }
+            const idx = canvasState.layers.findIndex(x => x.id === l.id);
+            textMoveForwardBtn.disabled = (idx === 0);
+            textMoveBackBtn.disabled    = (idx === canvasState.layers.length - 1);
+        }
+        
+        const setupEventListeners = () => {
+            toggleViewBtn.addEventListener('click', toggleCanvasZoom);
+
+            themeToggleBtn.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+                const isDarkMode = document.body.classList.contains('dark-mode');
+                localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+                themeToggleBtn.textContent = isDarkMode ? '◑' : '◐';
+            });
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeToggleBtn.textContent = '◑';
+            }
+
+            initialBackgroundInput.addEventListener('change', e => { handleBackgroundUpload(e.target.files[0]); e.target.value = null; });
+            
+            downloadImageBtn.addEventListener('click', downloadImage);
+            clearCanvasBtn.addEventListener('click', () => {
+                openConfirmationModal("This will clear the entire canvas. Are you sure?", () => {
+                    clearCanvas();
+                });
+            });
+
+            document.getElementById('mg-asset-library-close').addEventListener('click', closeAssetLibrary);
+            assetLibraryOverlay.addEventListener('click', e => { if (e.target === assetLibraryOverlay) closeAssetLibrary() });
+            assetPickerFileInput.addEventListener('change', e => {
+                processUploadedFile(e.target.files?.[0]);
+                e.target.value = null;
+            });
+
+            textBtn.addEventListener('click', e => { e.stopPropagation(); deactivateEraser(true); textDropdown.classList.toggle('visible'); visualsDropdown.classList.remove('visible'); shortcutsDropdown.classList.remove('visible'); backgroundRemoverDropdown.classList.remove('visible'); eraseToolDropdown.classList.remove('visible');});
+            addNewTextLayerBtn.addEventListener('click', addTextLayer);
+            
+            confirmYesBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const fn = confirmCallback;
+                confirmCallback = null;
+
+                try {
+                    if (typeof fn === 'function') {
+                        await fn();
+                    }
+                } catch (err) {
+                    console.error('Confirmation action failed:', err);
+                    toast('Error: Could not complete the action.', 4000);
+                } finally {
+                    closeConfirmationModal();
+                }
+            });
+
+            confirmNoBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                closeConfirmationModal();
+            });
+            
+            confirmationOverlay.addEventListener('click', (e) => {
+                if (e.target === confirmationOverlay) {
+                    closeConfirmationModal();
+                }
+            });
+
+            canvasPanel.addEventListener('mousedown', handleMovieInteractionStart);
+            window.addEventListener('mousemove', handleMovieInteractionMove);
+            window.addEventListener('mouseup', handleMovieInteractionEnd);
+            canvasPanel.addEventListener('mouseleave', () => {
+                if (!movieInteraction.active) movieCanvas.style.cursor = 'default';
+                eraseBrushPos = {x: -1000, y: -1000};
+                if(eraserMode !== 'none') {
+                    drawControlsOverlay();
+                }
+            });
+            window.addEventListener('keydown', handleKeyDown);
+
+            canvasPlaceholder.addEventListener('click', () => initialBackgroundInput.click());
+            canvasPanel.addEventListener('dragover', e => { e.preventDefault(); canvasPanel.classList.add('drag-over') });
+            canvasPanel.addEventListener('dragleave', () => canvasPanel.classList.remove('drag-over'));
+            canvasPanel.addEventListener('drop', e => {
+                e.preventDefault();
+                canvasPanel.classList.remove('drag-over');
+                const file = e.dataTransfer.files[0];
+                if (file) {
+                     if (!canvasState.backgroundElement) {
+                        handleBackgroundUpload(file);
+                     } else {
+                        processUploadedFile(file);
+                     }
+                }
+            });
+
+            shortcutsBtn.addEventListener('click', e => { e.stopPropagation(); deactivateEraser(true); shortcutsDropdown.classList.toggle('visible'); visualsDropdown.classList.remove('visible'); textDropdown.classList.remove('visible'); backgroundRemoverDropdown.classList.remove('visible'); eraseToolDropdown.classList.remove('visible');});
+            visualsBtn.addEventListener('click', e => { e.stopPropagation(); deactivateEraser(true); visualsDropdown.classList.toggle('visible'); shortcutsDropdown.classList.remove('visible'); textDropdown.classList.remove('visible'); backgroundRemoverDropdown.classList.remove('visible'); eraseToolDropdown.classList.remove('visible');});
+            backgroundRemoverBtn.addEventListener('click', e => { e.stopPropagation(); deactivateEraser(true); backgroundRemoverDropdown.classList.toggle('visible'); shortcutsDropdown.classList.remove('visible'); visualsDropdown.classList.remove('visible'); textDropdown.classList.remove('visible'); eraseToolDropdown.classList.remove('visible');});
+            eraseToolBtn.addEventListener('click', e => { e.stopPropagation(); eraseToolDropdown.classList.toggle('visible'); shortcutsDropdown.classList.remove('visible'); visualsDropdown.classList.remove('visible'); textDropdown.classList.remove('visible'); backgroundRemoverDropdown.classList.remove('visible');});
+            
+            eraseBtn.addEventListener('click', () => toggleEraserMode('erase'));
+            uneraseBtn.addEventListener('click', () => toggleEraserMode('unerase'));
+
+            revertErasingBtn.addEventListener('click', resetErasing);
+            undoEraseBtn.addEventListener('click', undoErasing);
+            
+            [visualsDropdown, textDropdown, shortcutsDropdown, backgroundRemoverDropdown, eraseToolDropdown].forEach(el => el.addEventListener('click', e => e.stopPropagation()));
+            removeBgBtn.addEventListener('click', removeBackground);
+
+            const allControls = document.querySelectorAll('#visuals-dropdown input, #visuals-dropdown select, #text-dropdown input, #text-dropdown select, #text-dropdown textarea, #erase-tool-dropdown input');
+            allControls.forEach(input => {
+                const eventType = ['range', 'color'].includes(input.type) || input.tagName === 'TEXTAREA' ? 'input' : 'change';
+                input.addEventListener(eventType, () => {
+                    const l = getActiveLayer();
+                    if (!l && !input.id.startsWith('bg-')) return;
+                    switch(input.id) {
+                        case 'asset-opacity': l.opacity = parseFloat(input.value); break;
+                        case 'asset-brightness': l.brightness = parseFloat(input.value); break;
+                        case 'asset-saturation': l.saturation = parseFloat(input.value); break;
+                        case 'bg-brightness': canvasState.bgBrightness = parseFloat(input.value); break;
+                        case 'bg-saturation': canvasState.bgSaturation = parseFloat(input.value); break;
+                        case 'text-content': if(l.type==='text') l.text = input.value; renderTextLayerPalette(); break;
+                        case 'text-font': if(l.type==='text') l.font = input.value; break;
+                        case 'text-size': if(l.type==='text') l.fontSize = parseFloat(input.value); break;
+                        case 'text-color': if(l.type==='text') l.color = input.value; break;
+                        case 'text-stroke-color': if(l.type==='text') l.strokeColor = input.value; break;
+                        case 'text-stroke-width': if(l.type==='text') l.strokeWidth = parseInt(input.value, 10); break;
+                        case 'shadow-enable': l.shadow.enabled = input.checked; document.getElementById('shadow-controls').classList.toggle('disabled', !input.checked); break;
+                        case 'shadow-color': l.shadow.color = input.value; break;
+                        case 'shadow-blur': l.shadow.blur = input.value; break;
+                        case 'shadow-offset-x': l.shadow.offsetX = input.value; break;
+                        case 'shadow-offset-y': l.shadow.offsetY = input.value; break;
+                        case 'border-enable': l.border.enabled = input.checked; document.getElementById('border-controls').classList.toggle('disabled', !input.checked); break;
+                        case 'border-color': l.border.color = input.value; break;
+                        case 'border-width': l.border.width = input.value; break;
+                    }
+                    if (!movieInteraction.active) drawFrame();
+                });
+            });
+            
+            const textMoveForwardBtn = document.getElementById('text-move-forward');
+            const textMoveBackBtn = document.getElementById('text-move-back');
+            if (textMoveForwardBtn) {
+                textMoveForwardBtn.addEventListener('click', () => {
+                    const l = getActiveLayer();
+                    if (!l || l.type !== 'text') return;
+                    if (nudgeLayerZ(l.id, -1)) {
+                        renderLayerPalette();
+                        renderTextLayerPalette();
+                        updateTextOrderButtonsState();
+                        drawFrame();
+                    }
+                });
+            }
+            if (textMoveBackBtn) {
+                textMoveBackBtn.addEventListener('click', () => {
+                    const l = getActiveLayer();
+                    if (!l || l.type !== 'text') return;
+                    if (nudgeLayerZ(l.id, +1)) {
+                        renderLayerPalette();
+                        renderTextLayerPalette();
+                        updateTextOrderButtonsState();
+                        drawFrame();
+                    }
+                });
+            }
+
+            const sliders = document.querySelectorAll('#visuals-dropdown input[type=range], #text-dropdown input[type=range], #erase-tool-dropdown input[type=range]');
+            const startScrubbing = (e) => {
+                const slider = e.currentTarget;
+                if (slider.id === 'asset-opacity') return;
+                const dropdown = slider.closest('[id$="-dropdown"]');
+                const container = slider.closest('.slider-container') || slider.closest('#eraser-controls-wrapper');
+                if (dropdown && container) {
+                    dropdown.classList.add('is-scrubbing');
+                    container.classList.add('is-active-slider');
+                }
+            };
+            const endScrubbing = () => {
+                const dropdown = document.querySelector('.is-scrubbing');
+                if (dropdown) {
+                    const activeContainer = dropdown.querySelector('.is-active-slider');
+                    if (activeContainer) activeContainer.classList.remove('is-active-slider');
+                    dropdown.classList.remove('is-scrubbing');
+                }
+            };
+            sliders.forEach(slider => {
+                slider.addEventListener('mousedown', startScrubbing);
+                slider.addEventListener('touchstart', startScrubbing, { passive: true });
+            });
+            window.addEventListener('mouseup', endScrubbing);
+            window.addEventListener('touchend', endScrubbing);
+            
+            window.addEventListener('click', (e) => {
+                const popups = [
+                    { dropdown: shortcutsDropdown, button: shortcutsBtn }, { dropdown: visualsDropdown, button: visualsBtn },
+                    { dropdown: textDropdown, button: textBtn }, { dropdown: backgroundRemoverDropdown, button: backgroundRemoverBtn },
+                    { dropdown: eraseToolDropdown, button: eraseToolBtn }
+                ];
+                const clickedOnEraserUI = eraseToolBtn.contains(e.target) || eraseToolDropdown.contains(e.target);
+                if (eraserMode !== 'none' && !canvasPanel.contains(e.target) && !clickedOnEraserUI) {
+                    deactivateEraser();
+                }
+                popups.forEach(p => {
+                    if (!p.button.contains(e.target) && !p.dropdown.contains(e.target)) {
+                        p.dropdown.classList.remove('visible');
+                    }
+                });
+            });
+
+            viewAllLocalAssetsBtn.addEventListener('click', () => {
+                renderFullLocalAssetFolder_IDB();
+                setLocalFolderTab('assets');
+                localAssetFolderOverlay.classList.add('visible');
+            });
+            localAssetFolderCloseBtn.addEventListener('click', () => localAssetFolderOverlay.classList.remove('visible'));
+            localAssetFolderOverlay.addEventListener('click', (e) => {
+                if (e.target === localAssetFolderOverlay) {
+                    localAssetFolderOverlay.classList.remove('visible');
+                }
+            });
+            tabAssetsBtn.addEventListener('click', () => setLocalFolderTab('assets'));
+            tabBackgroundsBtn.addEventListener('click', () => setLocalFolderTab('backgrounds'));
+
+            // Toggle Erase/Unerase quickly
+            eraserToggleBtn.addEventListener('click', () => {
+              const next = (eraserMode === 'erase') ? 'unerase' : 'erase';
+              toggleEraserMode(next);
+              refreshMiniHudLabels();
+            });
+
+            // Mini size slider stays in sync with the main one
+            eraserSizeMini.addEventListener('input', () => {
+              eraserSizeSlider.value = eraserSizeMini.value;
+              // if currently erasing and zoom is visible, refresh it
+              if (eraserZoomCanvas.style.display === 'block' && lastEraseCanvasPoint) {
+                drawEraserZoomAt(lastEraseCanvasPoint);
+              }
+            });
+
+            // Keep mini slider synced when main slider changes (from dropdown)
+            eraserSizeSlider.addEventListener('input', () => {
+              eraserSizeMini.value = eraserSizeSlider.value;
+              if (eraserZoomCanvas.style.display === 'block' && lastEraseCanvasPoint) {
+                drawEraserZoomAt(lastEraseCanvasPoint);
+              }
+            });
+
+            const canvasResizeObserver = new ResizeObserver(() => { resizeCanvas(); drawFrame(); });
+            canvasResizeObserver.observe(canvasPanel);
+        };
+        
+        // --- FONT LOADING & INITIALIZATION ---
+        async function loadCustomFonts() {
+            const fontFamilies = [
+                'Anton', 'Indie Flower', 'Londrina Outline', 'Patua One',
+                'Pixelify Sans', 'Press Start 2P', 'Roboto', 'Rubik Mono One',
+                'Young Serif', 'VT323'
+            ];
+            try {
+                const fontPromises = fontFamilies.map(font => document.fonts.load(`1rem "${font}"`));
+                await Promise.all(fontPromises);
+                console.log('All custom fonts loaded successfully.');
+            } catch (error) {
+                console.error('Error loading one or more custom fonts:', error);
+            }
+        }
+        
+        async function initialize() {
+            await loadCustomFonts();
+            await dedupeExistingAssetsByHashKeepNewest();
+            updateControlsState();
+            updateEditPanelsUI();
+            setupEventListeners();
+            drawFrame();
+        }
+
+        (async function () {
+            await initialize();
+            const loadingOverlay = document.getElementById('loading-overlay');
+            loadingOverlay.style.opacity = '0';
+            setTimeout(() => {
+                loadingOverlay.style.display = 'none';
+            }, 500);
+        })();
+
+    })();
+</script>
+</body>
+</html>
