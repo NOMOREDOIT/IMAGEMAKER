@@ -165,9 +165,8 @@ body{font-family:'VT323',monospace;background:var(--bg);color:var(--ink);display
             const nonCriticalCSS = `
                 .window{position:relative;background:var(--light);border:1px solid var(--ink);box-shadow:3px 3px 0 var(--ink);width:100%;max-width:1600px;margin:0 auto;height:calc(100vh - 20px);display:flex;flex-direction:column;overflow:hidden;transition:background-color .3s,border-color .3s,box-shadow .3s}
                 .titlebar{height:28px;background:var(--mid);display:flex;align-items:center;justify-content:space-between;padding:0 8px;border-bottom:1px solid var(--ink);font-size:20px;flex-shrink:0;cursor:default;position:relative;transition:background-color .3s,border-color .3s}
-                body[data-theme-is-dark="true"] .titlebar{color:#1e1e1e;}
-                .titlebar-controls{display:flex;align-items:center;gap:8px}.controls-fake{display:flex;gap:4px}.btn-square{width:16px;height:16px;background:var(--light);border:1px solid var(--ink)}.controls-fake .btn-square:first-child{background-color:var(--success-color)}.controls-fake .btn-square:last-child{background-color:var(--danger-color)}#shortcuts-btn,#visuals-btn,#text-btn,#toggle-view-btn,#erase-tool-btn{font-family:inherit;font-size:16px;background:var(--light);border:1px solid var(--ink);padding:0 8px;cursor:pointer;transition:background-color .3s,border-color .3s,color .3s;color:var(--ink)}#toggle-view-btn{padding:0 4px;font-size:18px}#shortcuts-dropdown{right:8px}#shortcuts-dropdown.visible{display:block}#shortcuts-dropdown h5{margin:0 0 .5rem 0;font-size:1.2rem;text-align:center}#shortcuts-dropdown ul{margin:0;padding:0;list-style:none;font-size:1rem}#shortcuts-dropdown li{display:flex;justify-content:space-between;padding:2px 0}#shortcuts-dropdown li kbd{font-family:inherit;border:1px solid var(--ink);padding:0 4px;background:var(--bg)}#visuals-dropdown,#text-dropdown,#shortcuts-dropdown, #erase-tool-dropdown{display:none;position:absolute;top:28px;background:rgba(var(--light-rgb),.3);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:1px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:.5rem 1rem;z-index:100;width:250px;transition:background .2s,backdrop-filter .2s,box-shadow .2s,border-color .2s}
-                #visuals-dropdown{right:278px}#erase-tool-dropdown{right:170px}#text-dropdown{right:74px}#visuals-dropdown.visible,#text-dropdown.visible, #erase-tool-dropdown.visible{display:block}#visuals-dropdown h5,#visuals-dropdown h6,#visuals-dropdown .slider-container,#text-dropdown h5,#text-dropdown h6,#text-dropdown .slider-container, #erase-tool-dropdown h5, #erase-tool-dropdown h6, #erase-tool-dropdown .eraser-mode-controls, #erase-tool-dropdown > .mg-btn{transition:opacity .2s}#visuals-dropdown h5,#text-dropdown h5, #erase-tool-dropdown h5{margin:0 0 .5rem 0;font-size:1.2rem;text-align:center}#visuals-dropdown h6,#text-dropdown h6, #erase-tool-dropdown h6{font-size:1.1rem;font-weight:700;text-align:left;margin-top:.5rem;margin-bottom:.5rem;border-bottom:1px solid var(--mid);padding-bottom:2px}#visuals-dropdown label,#text-dropdown label, #erase-tool-dropdown label{display:block;margin-top:.5rem;font-size:.9rem}
+                .titlebar-controls{display:flex;align-items:center;gap:8px}.controls-fake{display:flex;gap:4px}.btn-square{width:16px;height:16px;background:var(--light);border:1px solid var(--ink)}.controls-fake .btn-square:first-child{background-color:var(--success-color)}.controls-fake .btn-square:last-child{background-color:var(--danger-color)}#shortcuts-btn,#visuals-btn,#text-btn,#toggle-view-btn,#erase-tool-btn{font-family:inherit;font-size:1.1rem;background:var(--light);border:1px solid var(--ink);padding:0 8px;cursor:pointer;transition:background-color .3s,border-color .3s,color .3s;color:var(--ink)}#toggle-view-btn{padding:0 4px;font-size:18px}#shortcuts-dropdown{right:8px}#shortcuts-dropdown.visible{display:block}#shortcuts-dropdown h5{margin:0 0 .5rem 0;font-size:1.25rem;text-align:center}#shortcuts-dropdown ul{margin:0;padding:0;list-style:none;font-size:1rem}#shortcuts-dropdown li{display:flex;justify-content:space-between;padding:2px 0}#shortcuts-dropdown li kbd{font-family:inherit;border:1px solid var(--ink);padding:0 4px;background:var(--bg)}#visuals-dropdown,#text-dropdown,#shortcuts-dropdown, #erase-tool-dropdown{display:none;position:absolute;top:28px;background:rgba(var(--light-rgb),.3);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:1px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:.5rem 1rem;z-index:100;width:250px;transition:background .2s,backdrop-filter .2s,box-shadow .2s,border-color .2s}
+                #visuals-dropdown{right:278px}#erase-tool-dropdown{right:170px}#text-dropdown{right:74px}#visuals-dropdown.visible,#text-dropdown.visible, #erase-tool-dropdown.visible{display:block}#visuals-dropdown h5,#visuals-dropdown h6,#visuals-dropdown .slider-container,#text-dropdown h5,#text-dropdown h6,#text-dropdown .slider-container, #erase-tool-dropdown h5, #erase-tool-dropdown h6, #erase-tool-dropdown .eraser-mode-controls, #erase-tool-dropdown > .mg-btn{transition:opacity .2s}#visuals-dropdown h5,#text-dropdown h5, #erase-tool-dropdown h5{margin:0 0 .5rem 0;font-size:1.25rem;text-align:center}#visuals-dropdown h6,#text-dropdown h6, #erase-tool-dropdown h6{font-size:1.15rem;font-weight:700;text-align:left;margin-top:.5rem;margin-bottom:.5rem;border-bottom:1px solid var(--mid);padding-bottom:2px}#visuals-dropdown label,#text-dropdown label, #erase-tool-dropdown label{display:block;margin-top:.5rem;font-size:1rem}
                 #visuals-dropdown.is-scrubbing,#text-dropdown.is-scrubbing,#erase-tool-dropdown.is-scrubbing{background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;border-color:transparent}
                 #visuals-dropdown.is-scrubbing>h5, #visuals-dropdown.is-scrubbing #visuals-tabs, #visuals-dropdown.is-scrubbing>div>div>h6,#visuals-dropdown.is-scrubbing .slider-container{opacity:0;pointer-events:none}
                 #visuals-dropdown.is-scrubbing .slider-container.is-active-slider{opacity:1;pointer-events:auto}
@@ -175,12 +174,12 @@ body{font-family:'VT323',monospace;background:var(--bg);color:var(--ink);display
                 #text-dropdown.is-scrubbing .slider-container.is-active-slider {opacity: 1;pointer-events: auto;}
                 #erase-tool-dropdown.is-scrubbing>h5,#erase-tool-dropdown.is-scrubbing .eraser-mode-selector,#erase-tool-dropdown.is-scrubbing #eraser-controls-wrapper{opacity:0;pointer-events:none}
                 #erase-tool-dropdown.is-scrubbing #eraser-controls-wrapper.is-active-slider{opacity:1;pointer-events:auto}
-                #visuals-dropdown input[type=range],#text-dropdown input[type=range], #erase-tool-dropdown input[type=range], #mg-eraser-hud input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:2px;background:var(--ink);outline:0}#visuals-dropdown input[type=range]::-webkit-slider-thumb,#text-dropdown input[type=range]::-webkit-slider-thumb, #erase-tool-dropdown input[type=range]::-webkit-slider-thumb, #mg-eraser-hud input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;background:var(--ink);border-radius:50%;cursor:pointer}#visuals-dropdown input[type=range]::-moz-range-thumb,#text-dropdown input[type=range]::-moz-range-thumb, #erase-tool-dropdown input[type=range]::-moz-range-thumb, #mg-eraser-hud input[type=range]::-moz-range-thumb{width:16px;height:16px;background:var(--ink);border-radius:50%;cursor:pointer;border:none}#asset-visuals-controls.disabled,#text-visuals-controls.disabled,#eraser-controls-wrapper.disabled{opacity:.5;pointer-events:none}.mg-btn{font-family:inherit;font-size:18px;background:var(--light);border:1px solid var(--ink);padding:8px 16px;margin:4px;cursor:pointer;text-decoration:none;color:var(--ink);transition:.2s all;box-shadow:1px 1px 0 var(--shadow);width:100%;white-space:nowrap}.mg-btn:hover{filter:brightness(1.2);transform:translate(1px,1px);box-shadow:0 0 0 var(--shadow)}.mg-btn:disabled,.mg-btn.disabled{opacity:.5;pointer-events:none;box-shadow:none;transform:none}.mg-btn.active{background-color:var(--danger-color);color:var(--light);box-shadow:none;transform:translate(1px,1px)}.mg-btn.success{background-color:var(--success-color)}.mg-btn.generate{background-color:var(--ink);color:var(--light)}.hidden{display:none!important}#studio-container{display:grid;grid-template-columns:320px 1fr;grid-template-rows:minmax(0,1fr);gap:1.5rem;padding:1.5rem;flex-grow:1;min-height:0}#controls-panel{display:flex;flex-direction:column;gap:1rem;overflow-y:auto;min-height:0}#canvas-panel{display:flex;align-items:center;justify-content:center;border:1px solid var(--ink);background-color:var(--mid);position:relative;min-height:0;transition:background-color .5s ease-in-out;overflow:hidden}#controls-panel fieldset{background:var(--light);border:1px solid var(--ink);padding:.8rem;margin:0;text-align:left;transition:background-color .3s,border-color .3s,color .3s, opacity .3s}#controls-panel legend{font-size:1.2rem;font-weight:400;padding:0 .25rem;transition: color .3s;}.placeholder-text{color:var(--shadow);font-size:.9rem;text-align:center;padding:1rem;width:100%}#mg-asset-palette, #mg-local-asset-palette{display:flex;gap:.5rem;flex-wrap:wrap;min-height:70px;align-content:flex-start}.palette-slot,.layer-thumb{width:60px;height:60px;border:1px solid var(--ink);background:var(--light);cursor:pointer;position:relative;box-shadow:1px 1px 0 var(--shadow)}.layer-thumb{cursor:grab}.palette-slot.empty{display:flex;align-items:center;justify-content:center;font-size:3rem;line-height:1;color:var(--mid);transition:all .2s}.palette-slot.empty:hover{background-color:var(--mid);color:var(--ink)}.layer-thumb img{width:100%;height:100%;object-fit:cover;pointer-events:none}.layer-thumb.active{border:1px solid var(--action-color);transform:scale(1.05);box-shadow:none}.layer-controls{position:absolute;top:-5px;right:-5px;display:flex;gap:2px}.layer-btn{background-color:var(--danger-color);border:1px solid var(--ink);color:#fff;font-size:.8rem;font-weight:700;line-height:1;padding:1px 4px;cursor:pointer;width:18px;height:18px;text-align:center}#mg-movie-canvas,#mg-controls-overlay-canvas,#mg-pasteboard-overlay-canvas{position:absolute}#mg-controls-overlay-canvas,#mg-pasteboard-overlay-canvas{pointer-events:none}#mg-movie-canvas{pointer-events:auto}.mg-overlay-base{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .3s,visibility 0s .3s;background:rgba(10,10,10,.25)}.mg-overlay-base.visible{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .3s,visibility 0s 0s}.overlay-close-btn{position:absolute;top:8px;right:10px;background:0 0;border:none;line-height:1;cursor:pointer;padding:5px;font-family:'VT323',monospace;color:var(--ink);font-size:2rem;z-index:10;transition:opacity .2s}.overlay-close-btn:hover{opacity:.6}#mg-asset-picker-grid-wrapper, #mg-local-asset-folder-wrapper{background:var(--light);border:1px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:1.5rem;max-width:800px;width:90vw;max-height:85vh;display:flex;flex-direction:column;position:relative;transition: max-width .3s ease-in-out;}#mg-asset-picker-grid-wrapper h4, #mg-local-asset-folder-wrapper h4{font-size:1.5rem;text-align:center;font-weight:400;margin:0 0 1rem}#mg-asset-picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:.5rem;overflow-y:auto;padding:.5rem;flex-grow:1}#mg-asset-picker-actions{margin-top:1rem;text-align:center;display:flex;gap:.5rem;justify-content:center}
+                #visuals-dropdown input[type=range],#text-dropdown input[type=range], #erase-tool-dropdown input[type=range], #mg-eraser-hud input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:2px;background:var(--ink);outline:0}#visuals-dropdown input[type=range]::-webkit-slider-thumb,#text-dropdown input[type=range]::-webkit-slider-thumb, #erase-tool-dropdown input[type=range]::-webkit-slider-thumb, #mg-eraser-hud input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;background:var(--ink);border-radius:50%;cursor:pointer}#visuals-dropdown input[type=range]::-moz-range-thumb,#text-dropdown input[type=range]::-moz-range-thumb, #erase-tool-dropdown input[type=range]::-moz-range-thumb, #mg-eraser-hud input[type=range]::-moz-range-thumb{width:16px;height:16px;background:var(--ink);border-radius:50%;cursor:pointer;border:none}#asset-visuals-controls.disabled,#text-visuals-controls.disabled,#eraser-controls-wrapper.disabled{opacity:.5;pointer-events:none}.mg-btn{font-family:inherit;font-size:18px;background:var(--light);border:1px solid var(--ink);padding:8px 16px;margin:4px;cursor:pointer;text-decoration:none;color:var(--ink);transition:.2s all;box-shadow:1px 1px 0 var(--shadow);width:100%;white-space:nowrap}.mg-btn:hover{filter:brightness(1.2);transform:translate(1px,1px);box-shadow:0 0 0 var(--shadow)}.mg-btn:disabled,.mg-btn.disabled{opacity:.5;pointer-events:none;box-shadow:none;transform:none}.mg-btn.active{background-color:var(--danger-color);color:var(--light);box-shadow:none;transform:translate(1px,1px)}.mg-btn.success{background-color:var(--success-color)}.mg-btn.generate{background-color:var(--ink);color:var(--light)}.hidden{display:none!important}#studio-container{display:grid;grid-template-columns:320px 1fr;grid-template-rows:minmax(0,1fr);gap:1.5rem;padding:1.5rem;flex-grow:1;min-height:0}#controls-panel{display:flex;flex-direction:column;gap:1rem;overflow-y:auto;min-height:0}#canvas-panel{display:flex;align-items:center;justify-content:center;border:1px solid var(--ink);background-color:var(--mid);position:relative;min-height:0;transition:background-color .5s ease-in-out;overflow:hidden}#controls-panel fieldset{background:var(--light);border:1px solid var(--ink);padding:.8rem;margin:0;text-align:left;transition:background-color .3s,border-color .3s,color .3s, opacity .3s}#controls-panel legend{font-size:1.2rem;font-weight:400;padding:0 .25rem;transition: color .3s;}.placeholder-text{color:var(--mid);font-size:1.1rem;text-align:center;padding:1rem;width:100%} body[data-theme-is-dark="true"] #layer-instructions {color: var(--ink);} #mg-asset-palette, #mg-local-asset-palette{display:flex;gap:.5rem;flex-wrap:wrap;min-height:70px;align-content:flex-start}.palette-slot,.layer-thumb{width:60px;height:60px;border:1px solid var(--ink);background:var(--light);cursor:pointer;position:relative;box-shadow:1px 1px 0 var(--shadow)}.layer-thumb{cursor:grab}.palette-slot.empty{display:flex;align-items:center;justify-content:center;font-size:3rem;line-height:1;color:var(--mid);transition:all .2s}.palette-slot.empty:hover{background-color:var(--mid);color:var(--ink)}.layer-thumb img{width:100%;height:100%;object-fit:cover;pointer-events:none}.layer-thumb.active{border:1px solid var(--action-color);transform:scale(1.05);box-shadow:none}.layer-controls{position:absolute;top:-5px;right:-5px;display:flex;gap:2px}.layer-btn{background-color:var(--danger-color);border:1px solid var(--ink);color:#fff;font-size:.8rem;font-weight:700;line-height:1;padding:1px 4px;cursor:pointer;width:18px;height:18px;text-align:center}#mg-movie-canvas,#mg-controls-overlay-canvas,#mg-pasteboard-overlay-canvas{position:absolute}#mg-controls-overlay-canvas,#mg-pasteboard-overlay-canvas{pointer-events:none}#mg-movie-canvas{pointer-events:auto}.mg-overlay-base{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .3s,visibility 0s .3s;background:rgba(10,10,10,.25)}.mg-overlay-base.visible{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .3s,visibility 0s 0s}.overlay-close-btn{position:absolute;top:8px;right:10px;background:0 0;border:none;line-height:1;cursor:pointer;padding:5px;font-family:'VT323',monospace;color:var(--ink);font-size:2rem;z-index:10;transition:opacity .2s}.overlay-close-btn:hover{opacity:.6}#mg-asset-picker-grid-wrapper, #mg-local-asset-folder-wrapper{background:var(--light);border:1px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:1.5rem;max-width:800px;width:90vw;max-height:85vh;display:flex;flex-direction:column;position:relative;transition: max-width .3s ease-in-out;}#mg-asset-picker-grid-wrapper h4, #mg-local-asset-folder-wrapper h4{font-size:1.5rem;text-align:center;font-weight:400;margin:0 0 1rem}#mg-asset-picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:.5rem;overflow-y:auto;padding:.5rem;flex-grow:1}#mg-asset-picker-actions{margin-top:1rem;text-align:center;display:flex;gap:.5rem;justify-content:center}
                 #mg-local-asset-grid, #mg-local-asset-grid-assets, #mg-local-asset-grid-backgrounds {display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:1rem;overflow-y:auto;padding:1rem;flex-grow:1}.mg-template{position:relative;aspect-ratio:1/1;border:1px solid var(--mid);background-color:var(--bg);box-shadow:1px 1px 0 var(--shadow);transition:all .2s ease-in-out}.mg-template:hover{transform:scale(1.03);box-shadow:3px 3px 0 var(--shadow)}.mg-template img{display:block;width:100%;height:100%;object-fit:cover;cursor:pointer;}.mg-template .layer-btn.delete{position:absolute;top:4px;right:4px;z-index:5;width:22px;height:22px;font-size:1rem;display:flex;align-items:center;justify-content:center;border-radius:2px;}
                 .mg-btn.tab { color: var(--ink); opacity: 0.7; background: transparent; box-shadow: 1px 1px 0 var(--shadow); transform: translateY(0); transition: transform .1s ease, box-shadow .1s ease, background-color .2s, opacity .2s; }
                 .mg-btn.tab:hover { opacity: 1; transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--shadow); }
                 .mg-btn.tab.active { background-color: var(--mid); opacity: 1; transform: translate(2px, 2px); box-shadow: 0 0 0 var(--shadow); }
-                #mg-toast{visibility:hidden;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--light);border:1px solid var(--ink);padding:.5rem 1rem;color:var(--ink);font-size:1rem;z-index:2000;box-shadow:3px 3px 0 var(--ink)}#canvas-placeholder{position:absolute;width:calc(100% - 20px);height:calc(100% - 20px);border:2px dashed var(--shadow);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;color:var(--shadow);transition:all .2s;padding:2rem;overflow:hidden;position:relative}#canvas-placeholder h3,#canvas-placeholder p{position:relative;z-index:2}#canvas-placeholder img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1;opacity:.6}#canvas-placeholder h3{font-size:2rem;margin:0 0 .5rem}#canvas-placeholder p{font-size:1.2rem}#canvas-placeholder:hover,#canvas-panel.drag-over #canvas-placeholder{border-color:var(--ink);color:var(--ink);background-color:rgba(255,255,255,.5)}#canvas-panel.drag-over{background-color:var(--shadow)}#layer-instructions{padding:0 0 .5rem 0;margin:0;font-size:1rem}#mg-confirmation-overlay, #mg-asset-action-overlay{z-index:5000}#mg-confirmation-dialog, #mg-asset-action-dialog{padding:1.5rem;text-align:center;width:90%;max-width:400px;height:auto}#mg-confirmation-dialog p, #mg-asset-action-dialog p{font-size:1.2rem;margin:0 0 1.5rem}#mg-confirmation-dialog .action-buttons, #mg-asset-action-dialog .action-buttons{display:flex;justify-content:center;gap:0.5rem;}#text-content,#text-font{transition:background-color .3s,border-color .3s,color .3s}#text-layer-manager{display:flex;gap:.5rem;align-items:center;padding-bottom:.5rem;margin-bottom:.5rem;border-bottom:1px solid var(--mid)}#text-layer-palette{display:flex;gap:.5rem;flex-wrap:wrap;flex-grow:1;min-height:44px}#add-new-text-layer-btn{width:40px;height:40px;flex-shrink:0;font-size:2rem;line-height:1;padding:0}.text-thumb{width:60px;height:40px;display:flex;align-items:center;justify-content:center;overflow:hidden;background-color:var(--ink);color:var(--light);font-size:.8rem;padding:2px;text-align:center}.text-thumb span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+                #mg-toast{visibility:hidden;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--light);border:1px solid var(--ink);padding:.5rem 1rem;color:var(--ink);font-size:1rem;z-index:2000;box-shadow:3px 3px 0 var(--ink)}#canvas-placeholder{position:absolute;width:calc(100% - 20px);height:calc(100% - 20px);border:2px dashed var(--mid);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;color:var(--mid);transition:all .2s;padding:2rem;overflow:hidden;position:relative}#canvas-placeholder h3,#canvas-placeholder p{position:relative;z-index:2}#canvas-placeholder img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:1;opacity:.6}#canvas-placeholder h3{font-size:2.2rem;margin:0 0 .5rem}#canvas-placeholder p{font-size:1.3rem}#canvas-placeholder:hover,#canvas-panel.drag-over #canvas-placeholder{border-color:var(--ink);color:var(--ink);background-color:rgba(255,255,255,.5)}#canvas-panel.drag-over{background-color:var(--shadow)}#layer-instructions{padding:0 0 .5rem 0;margin:0;font-size:1.1rem}#mg-confirmation-overlay, #mg-asset-action-overlay{z-index:5000}#mg-confirmation-dialog, #mg-asset-action-dialog{padding:1.5rem;text-align:center;width:90%;max-width:400px;height:auto}#mg-confirmation-dialog p, #mg-asset-action-dialog p{font-size:1.2rem;margin:0 0 1.5rem}#mg-confirmation-dialog .action-buttons, #mg-asset-action-dialog .action-buttons{display:flex;justify-content:center;gap:0.5rem;}#text-content,#text-font{transition:background-color .3s,border-color .3s,color .3s}#text-layer-manager{display:flex;gap:.5rem;align-items:center;padding-bottom:.5rem;margin-bottom:.5rem;border-bottom:1px solid var(--mid)}#text-layer-palette{display:flex;gap:.5rem;flex-wrap:wrap;flex-grow:1;min-height:44px}#add-new-text-layer-btn{width:40px;height:40px;flex-shrink:0;font-size:2rem;line-height:1;padding:0}.text-thumb{width:60px;height:40px;display:flex;align-items:center;justify-content:center;overflow:hidden;background-color:var(--ink);color:var(--light);font-size:.8rem;padding:2px;text-align:center}.text-thumb span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
                 .palette-slot.empty:disabled {opacity: 0.4;cursor: default;pointer-events: none;background-color: var(--light);}
                 .palette-slot.empty:disabled:hover {background-color: var(--light);color: var(--mid);}
                 #shortcuts-btn:disabled, #visuals-btn:disabled, #text-btn:disabled, #erase-tool-btn:disabled {opacity: 0.5;pointer-events: none;cursor: default;}
@@ -202,7 +201,7 @@ body{font-family:'VT323',monospace;background:var(--bg);color:var(--ink);display
                 #erase-tool-dropdown .mg-btn { margin-top: 0.5rem; }
                 .eraser-mode-selector{display:flex;gap:.5rem;margin-bottom:.5rem}.eraser-mode-selector .mg-btn{width:50%;margin:0;padding:4px 8px;font-size:16px}.eraser-mode-selector .mg-btn.active{background-color:var(--action-color);color:var(--light);transform:none;box-shadow:inset 1px 1px 0 rgba(0,0,0,.2)}
                 #assets-folder-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
-                #assets-folder-actions p { font-size: 0.9rem; margin: 0; }
+                #assets-folder-actions p { font-size: 1.1rem; margin: 0; }
                 #assets-folder-fieldset.disabled legend { color: var(--shadow); }
                 #mg-eraser-zoom, #mg-eraser-hud {position: absolute; z-index: 5; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .2s, visibility 0s .2s;}
                 #mg-eraser-zoom.visible, #mg-eraser-hud.visible {opacity: 1; visibility: visible; pointer-events: auto; transition: opacity .2s, visibility 0s 0s;}
@@ -240,8 +239,8 @@ body{font-family:'VT323',monospace;background:var(--bg);color:var(--ink);display
                 #custom-font-select{position:relative}#font-select-trigger{background:var(--bg);border:1px solid var(--ink);padding:4px 8px;font-size:1rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background-color .3s,border-color .3s}#font-select-trigger:focus,#custom-font-select.open #font-select-trigger{border-color:var(--action-color)}#font-select-trigger span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#font-select-trigger i{transition:transform .2s ease-in-out;font-size:.8em}#custom-font-select.open #font-select-trigger i{transform:rotate(180deg)}#font-select-dropdown{position:absolute;top:calc(100% + 2px);left:0;right:0;background:var(--light);border:1px solid var(--ink);z-index:101;max-height:250px;overflow-y:auto;box-shadow:2px 2px 0 var(--shadow)}#font-select-list{list-style:none;margin:0;padding:0}
                 #font-select-list li{padding:6px 10px;cursor:pointer;transition:background-color .2s;white-space:nowrap;font-size:.9rem}
                 #font-select-list li:hover,#font-select-list li.hover-preview{background-color:var(--mid)}#font-select-list li.selected{background-color:var(--action-color);color:var(--light)}
-                #mg-selection-box {position: absolute;pointer-events: none;display: flex;align-items: center;justify-content: center;font-family: 'Courier New', Courier, monospace;font-size: 1.2rem;background: transparent;transition: box-shadow 0.2s ease-in-out, filter 0.2s ease-in-out;visibility: hidden;z-index: 10;}
-                #mg-selection-box.visible { visibility: visible; }
+                #mg-selection-box {position: absolute;pointer-events: none;display: flex;align-items: center;justify-content: center;font-family: 'Courier New', Courier, monospace;font-size: 1.2rem;background: transparent;transition: box-shadow 0.2s ease-in-out, filter 0.2s ease-in-out, opacity 0.2s ease-in-out;visibility: hidden;opacity: 0;z-index: 10;}
+                #mg-selection-box.visible { visibility: visible; opacity: 1; }
                 #mg-selection-box .resizer, #mg-selection-box .rotater {position: absolute;z-index: 11;pointer-events: auto;}
                 .style-box1 { filter: url(#filter-crayon-classic); border: 5px double #00FF00; border-radius: 4% 2% 6% 3% / 3% 5% 2% 4%; box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2); }
                 .style-box1 .resizer { width: 14px; height: 14px; background: #00FF00; border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; top: -9px; left: -9px; cursor: nwse-resize; }
@@ -339,7 +338,7 @@ body{font-family:'VT323',monospace;background:var(--bg);color:var(--ink);display
         const pasteboardOverlayCanvas = document.getElementById('mg-pasteboard-overlay-canvas');
         const pasteboardCtx = pasteboardOverlayCanvas.getContext('2d');
         const selectionBox = document.getElementById('mg-selection-box');
-        const PASTEBOARD_MARGIN = 500;
+        const PASTEBOARD_MARGIN = 1500;
         const initialBackgroundInput = document.getElementById('initial-background-input');
         const layerInstructions = document.getElementById('layer-instructions');
         const movieCanvas = document.getElementById('mg-movie-canvas');
@@ -908,28 +907,44 @@ body{font-family:'VT323',monospace;background:var(--bg);color:var(--ink);display
         }
         
         function resizeCanvas() {
-            const panelWidth = canvasPanel.clientWidth, panelHeight = canvasPanel.clientHeight;
+            const panelWidth = canvasPanel.clientWidth;
+            const panelHeight = canvasPanel.clientHeight;
             if (panelWidth === 0 || panelHeight === 0) return;
+
             const canvasAspectRatio = movieCanvas.width / movieCanvas.height;
             let displayWidth, displayHeight;
-            if (panelWidth / panelHeight > canvasAspectRatio) { displayHeight = panelHeight; displayWidth = displayHeight * canvasAspectRatio; } 
-            else { displayWidth = panelWidth; displayHeight = displayWidth / canvasAspectRatio; }
-            [movieCanvas, controlsOverlayCanvas, selectionBox].forEach(c => {
+            if (panelWidth / panelHeight > canvasAspectRatio) {
+                displayHeight = panelHeight;
+                displayWidth = displayHeight * canvasAspectRatio;
+            } else {
+                displayWidth = panelWidth;
+                displayHeight = displayWidth / canvasAspectRatio;
+            }
+
+            const topOffset = (panelHeight - displayHeight) / 2;
+            const leftOffset = (panelWidth - displayWidth) / 2;
+
+            [movieCanvas, controlsOverlayCanvas].forEach(c => {
                 c.style.width = `${displayWidth}px`;
                 c.style.height = `${displayHeight}px`;
-                const panelRect = canvasPanel.getBoundingClientRect();
-                const canvasRect = movieCanvas.getBoundingClientRect();
-                const topOffset = (panelRect.height - canvasRect.height) / 2;
-                const leftOffset = (panelRect.width - canvasRect.width) / 2;
                 c.style.position = 'absolute';
                 c.style.top = `${topOffset}px`;
                 c.style.left = `${leftOffset}px`;
             });
+
             pasteboardOverlayCanvas.width = movieCanvas.width + PASTEBOARD_MARGIN * 2;
             pasteboardOverlayCanvas.height = movieCanvas.height + PASTEBOARD_MARGIN * 2;
+
             const scaleFactor = displayWidth / movieCanvas.width;
             pasteboardOverlayCanvas.style.width = `${pasteboardOverlayCanvas.width * scaleFactor}px`;
             pasteboardOverlayCanvas.style.height = `${pasteboardOverlayCanvas.height * scaleFactor}px`;
+            
+            const pasteboardTopOffset = topOffset - (PASTEBOARD_MARGIN * scaleFactor);
+            const pasteboardLeftOffset = leftOffset - (PASTEBOARD_MARGIN * scaleFactor);
+            
+            pasteboardOverlayCanvas.style.position = 'absolute';
+            pasteboardOverlayCanvas.style.top = `${pasteboardTopOffset}px`;
+            pasteboardOverlayCanvas.style.left = `${pasteboardLeftOffset}px`;
         }
         
         function populateAssetLibraryGrid() {
@@ -1275,7 +1290,9 @@ body{font-family:'VT323',monospace;background:var(--bg);color:var(--ink);display
             movieCtx.filter = `brightness(${canvasState.bgBrightness}) saturate(${canvasState.bgSaturation})`;
             movieCtx.drawImage(canvasState.backgroundElement, 0, 0, movieCanvas.width, movieCanvas.height);
             movieCtx.restore();
-            drawLayers(movieCtx, canvasState.layers);
+            if (!isCanvasViewZoomedOut) {
+                drawLayers(movieCtx, canvasState.layers);
+            }
             drawControlsOverlay();
         }
         
@@ -1284,26 +1301,56 @@ body{font-family:'VT323',monospace;background:var(--bg);color:var(--ink);display
 
         function drawControlsOverlay() {
             updateSelectionBoxDOM();
-            const ctx = isCanvasViewZoomedOut ? pasteboardCtx : controlsCtx;
-            const canvas = isCanvasViewZoomedOut ? pasteboardOverlayCanvas : controlsOverlayCanvas;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (eraserMode !== 'none' && !movieInteraction.active) {
-                const canvasPoint = getMovieCanvasPoint({clientX: eraseBrushPos.x + movieCanvas.getBoundingClientRect().left, clientY: eraseBrushPos.y + movieCanvas.getBoundingClientRect().top});
+        
+            if (isCanvasViewZoomedOut) {
+                const ctx = pasteboardCtx;
+                const canvas = pasteboardOverlayCanvas;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
                 ctx.save();
-                if (isCanvasViewZoomedOut) ctx.translate(PASTEBOARD_MARGIN, PASTEBOARD_MARGIN);
-                const brushColor = eraserMode === 'unerase' ? 'rgba(85, 204, 85, 0.9)' : 'white';
-                ctx.beginPath();
-                ctx.arc(canvasPoint.x, canvasPoint.y, eraserSizeSlider.value / 2, 0, 2 * Math.PI);
-                ctx.strokeStyle = brushColor;
-                ctx.lineWidth = 2;
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.arc(canvasPoint.x, canvasPoint.y, eraserSizeSlider.value / 2, 0, 2 * Math.PI);
-                ctx.setLineDash([5, 5]);
-                ctx.strokeStyle = 'black';
-                ctx.lineWidth = 1;
-                ctx.stroke();
+                ctx.translate(PASTEBOARD_MARGIN, PASTEBOARD_MARGIN);
+                drawLayers(ctx, canvasState.layers);
                 ctx.restore();
+        
+                if (eraserMode !== 'none' && !movieInteraction.active) {
+                    const canvasPoint = getMovieCanvasPoint({clientX: eraseBrushPos.x + movieCanvas.getBoundingClientRect().left, clientY: eraseBrushPos.y + movieCanvas.getBoundingClientRect().top});
+                    ctx.save();
+                    ctx.translate(PASTEBOARD_MARGIN, PASTEBOARD_MARGIN);
+                    const brushColor = eraserMode === 'unerase' ? 'rgba(85, 204, 85, 0.9)' : 'white';
+                    ctx.beginPath();
+                    ctx.arc(canvasPoint.x, canvasPoint.y, eraserSizeSlider.value / 2, 0, 2 * Math.PI);
+                    ctx.strokeStyle = brushColor;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(canvasPoint.x, canvasPoint.y, eraserSizeSlider.value / 2, 0, 2 * Math.PI);
+                    ctx.setLineDash([5, 5]);
+                    ctx.strokeStyle = 'black';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            } else {
+                const ctx = controlsCtx;
+                const canvas = controlsOverlayCanvas;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                if (eraserMode !== 'none' && !movieInteraction.active) {
+                    const canvasPoint = getMovieCanvasPoint({clientX: eraseBrushPos.x + movieCanvas.getBoundingClientRect().left, clientY: eraseBrushPos.y + movieCanvas.getBoundingClientRect().top});
+                    ctx.save();
+                    const brushColor = eraserMode === 'unerase' ? 'rgba(85, 204, 85, 0.9)' : 'white';
+                    ctx.beginPath();
+                    ctx.arc(canvasPoint.x, canvasPoint.y, eraserSizeSlider.value / 2, 0, 2 * Math.PI);
+                    ctx.strokeStyle = brushColor;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(canvasPoint.x, canvasPoint.y, eraserSizeSlider.value / 2, 0, 2 * Math.PI);
+                    ctx.setLineDash([5, 5]);
+                    ctx.strokeStyle = 'black';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    ctx.restore();
+                }
             }
         }
         
@@ -1318,35 +1365,62 @@ body{font-family:'VT323',monospace;background:var(--bg);color:var(--ink);display
         }
 
         function updateSelectionBoxDOM() {
-            const activeLayer = getActiveLayer();
-            if (!activeLayer || eraserMode !== 'none') { selectionBox.classList.remove('visible'); return; }
+            const l = getActiveLayer();
+            if (!l || eraserMode !== 'none') {
+                selectionBox.classList.remove('visible');
+                return;
+            }
             selectionBox.classList.add('visible');
-            const newClassName = activeBorderStyle;
-            if (!selectionBox.classList.contains(newClassName)) { selectionBox.className = `visible ${newClassName}`; createSelectionBoxHandles(selectionBox, newClassName); }
-            const canvasRect = movieCanvas.getBoundingClientRect();
-            const scale = canvasRect.width / movieCanvas.width;
-            let dWidth, dHeight;
-            if (activeLayer.type === 'image') {
-                const assetWidth  = activeLayer.proxyCanvas?.width  || activeLayer.asset?.naturalWidth  || 0;
-                const assetHeight = activeLayer.proxyCanvas?.height || activeLayer.asset?.naturalHeight || 0;
-                if (!assetWidth || !assetHeight) { selectionBox.classList.remove('visible'); return; }
-                dWidth = activeLayer.size;
-                dHeight = activeLayer.size * (assetHeight / assetWidth);
-            } else { dWidth = activeLayer.width; dHeight = activeLayer.height; }
+
+            const styleClass = activeBorderStyle;
+            if (!selectionBox.classList.contains(styleClass)) {
+                selectionBox.className = `visible ${styleClass}`;
+                createSelectionBoxHandles(selectionBox, styleClass);
+            }
+
+            const baseCanvas = isCanvasViewZoomedOut ? pasteboardOverlayCanvas : movieCanvas;
+            const baseRect = baseCanvas.getBoundingClientRect();
+            const panelRect = canvasPanel.getBoundingClientRect();
+
+            const scale = baseRect.width / baseCanvas.width;
+
+            const { dWidth, dHeight } = getLayerMetrics(l);
+            if (!dWidth || !dHeight) {
+                selectionBox.classList.remove('visible');
+                return;
+            }
+
+            const marginScreen = isCanvasViewZoomedOut ? (PASTEBOARD_MARGIN * scale) : 0;
+
             const screenWidth = dWidth * scale;
             const screenHeight = dHeight * scale;
-            const screenX = (activeLayer.x - dWidth / 2) * scale;
-            const screenY = (activeLayer.y - dHeight / 2) * scale;
+
+            const offsetLeft = baseRect.left - panelRect.left;
+            const offsetTop = baseRect.top - panelRect.top;
+            selectionBox.style.position = 'absolute';
+            selectionBox.style.left = `${offsetLeft}px`;
+            selectionBox.style.top = `${offsetTop}px`;
             selectionBox.style.width = `${screenWidth}px`;
             selectionBox.style.height = `${screenHeight}px`;
-            selectionBox.style.transform = `translate(${screenX}px, ${screenY}px) rotate(${activeLayer.rot}deg)`;
+
+            const screenX = (l.x - dWidth / 2) * scale + marginScreen;
+            const screenY = (l.y - dHeight / 2) * scale + marginScreen;
+
+            selectionBox.style.transform = `translate(${screenX}px, ${screenY}px) rotate(${l.rot}deg)`;
         }
 
         function toggleCanvasZoom() {
+            selectionBox.classList.remove('visible');
             isCanvasViewZoomedOut = !isCanvasViewZoomedOut;
             canvasPanel.classList.toggle('is-zoomed-out', isCanvasViewZoomedOut);
             toggleViewBtn.textContent = isCanvasViewZoomedOut ? '⛶' : '⬚';
             toggleViewBtn.title = isCanvasViewZoomedOut ? 'Reset Canvas View (Z)' : 'Zoom Out Canvas (Z)';
+            
+            movieCanvas.addEventListener('transitionend', drawFrame, { once: true });
+
+            requestAnimationFrame(() => {
+                resizeCanvas();
+            });
         }
 
         function downloadImage() {
@@ -1439,10 +1513,23 @@ body{font-family:'VT323',monospace;background:var(--bg);color:var(--ink);display
         }
 
         function getMovieCanvasPoint(e) {
-            const movieCanvasRect = movieCanvas.getBoundingClientRect();
-            const scaleX = movieCanvas.width / movieCanvasRect.width;
-            const scaleY = movieCanvas.height / movieCanvasRect.height;
-            return { x: (e.clientX - movieCanvasRect.left) * scaleX, y: (e.clientY - movieCanvasRect.top) * scaleY };
+            if (isCanvasViewZoomedOut) {
+                const pbRect = pasteboardOverlayCanvas.getBoundingClientRect();
+                const scale = pbRect.width / pasteboardOverlayCanvas.width;
+                const xInPb = (e.clientX - pbRect.left) / scale;
+                const yInPb = (e.clientY - pbRect.top) / scale;
+                const x = xInPb - PASTEBOARD_MARGIN;
+                const y = yInPb - PASTEBOARD_MARGIN;
+                return { x, y }; // Return unclamped coordinates
+            } else {
+                const movieRect = movieCanvas.getBoundingClientRect();
+                const scaleX = movieCanvas.width / movieRect.width;
+                const scaleY = movieCanvas.height / movieRect.height;
+                return {
+                    x: (e.clientX - movieRect.left) * scaleX,
+                    y: (e.clientY - movieRect.top) * scaleY
+                };
+            }
         }
         
         function applyBrushToLayer(layer, canvasPoint) {
@@ -1566,7 +1653,7 @@ body{font-family:'VT323',monospace;background:var(--bg);color:var(--ink);display
                     }
                 }
             }
-            if (!interactionFound && activeLayerId && target === movieCanvas) {
+            if (!interactionFound && activeLayerId && (target === movieCanvas || target === pasteboardOverlayCanvas) ) {
                 activeLayerId = null;
                 updateEditPanelsUI();
                 renderLayerPalette();
@@ -1646,14 +1733,28 @@ body{font-family:'VT323',monospace;background:var(--bg);color:var(--ink);display
         }
 
         function updateCursor(e) {
-            if (eraserMode !== 'none') { movieCanvas.classList.add('erase-cursor'); return; }
-            movieCanvas.classList.remove('erase-cursor');
+            if (eraserMode !== 'none') {
+                movieCanvas.style.cursor = 'none';
+                pasteboardOverlayCanvas.style.cursor = 'none';
+                return;
+            }
+            movieCanvas.style.cursor = '';
+            pasteboardOverlayCanvas.style.cursor = '';
+
             const point = getMovieCanvasPoint(e);
             let newCursor = 'default';
             for (let i = 0; i < canvasState.layers.length; i++) {
-                if (isPointInMovieLayer(point, canvasState.layers[i])) { newCursor = (canvasState.layers[i].id === activeLayerId) ? 'move' : 'pointer'; break; }
+                if (isPointInMovieLayer(point, canvasState.layers[i])) {
+                    newCursor = (canvasState.layers[i].id === activeLayerId) ? 'move' : 'pointer';
+                    break;
+                }
             }
-            movieCanvas.style.cursor = newCursor;
+            
+            if (isCanvasViewZoomedOut) {
+                pasteboardOverlayCanvas.style.cursor = newCursor;
+            } else {
+                movieCanvas.style.cursor = newCursor;
+            }
         }
 
         function handleKeyDown(e) {
@@ -1697,7 +1798,8 @@ body{font-family:'VT323',monospace;background:var(--bg);color:var(--ink);display
             eraseBtn.classList.remove('active');
             uneraseBtn.classList.remove('active');
             eraseToolBtn.classList.remove('active');
-            movieCanvas.classList.remove('erase-cursor');
+            movieCanvas.style.cursor = '';
+            pasteboardOverlayCanvas.style.cursor = '';
             hideToast();
             drawFrame();
             if (shouldCloseDropdown) { eraseToolDropdown.classList.remove('visible'); }
@@ -1766,7 +1868,7 @@ body{font-family:'VT323',monospace;background:var(--bg);color:var(--ink);display
             canvasPanel.addEventListener('mousedown', handleMovieInteractionStart);
             window.addEventListener('mousemove', handleMovieInteractionMove);
             window.addEventListener('mouseup', handleMovieInteractionEnd);
-            canvasPanel.addEventListener('mouseleave', () => { if (!movieInteraction.active) movieCanvas.style.cursor = 'default'; eraseBrushPos = {x: -1000, y: -1000}; if(eraserMode !== 'none' && !movieInteraction.active) drawControlsOverlay(); });
+            canvasPanel.addEventListener('mouseleave', () => { if (!movieInteraction.active) { movieCanvas.style.cursor = 'default'; pasteboardOverlayCanvas.style.cursor = 'default'; } eraseBrushPos = {x: -1000, y: -1000}; if(eraserMode !== 'none' && !movieInteraction.active) drawControlsOverlay(); });
             window.addEventListener('keydown', handleKeyDown);
             canvasPlaceholder.addEventListener('click', () => initialBackgroundInput.click());
             canvasPanel.addEventListener('dragover', e => { e.preventDefault(); canvasPanel.classList.add('drag-over') });
