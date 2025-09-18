@@ -265,14 +265,6 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
 
 <!-- === SCRIPT IS NOW A MODULE === -->
 <script type="module">
-    // --- CORRECTLY IMPORTING FROM THE CDN ---
-    import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1';
-
-    // --- GLOBAL CONFIGURATION FOR TRANSFORMERS.JS ---
-    // As you correctly pointed out, prevent checks for local models
-    env.allowLocalModels = false;
-    env.allowRemoteModels = true; // Be explicit, though it's the default
-
     // --- DEFERRED ASSETS LOGIC ---
     let secondaryFontsLoaded = false;
     function loadSecondaryFonts() {
@@ -320,15 +312,15 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
     const canvasPanel = document.getElementById('canvas-panel');
     const canvasPlaceholder = document.getElementById('canvas-placeholder');
     const controlsOverlayCanvas = document.getElementById('mg-controls-overlay-canvas');
-    const controlsCtx = controlsOverlayCanvas.getContext('2d');
+    const controlsCtx = controlsOverlayCanvas.getContext('2d', { willReadFrequently: true });
     const pasteboardOverlayCanvas = document.getElementById('mg-pasteboard-overlay-canvas');
-    const pasteboardCtx = pasteboardOverlayCanvas.getContext('2d');
+    const pasteboardCtx = pasteboardOverlayCanvas.getContext('2d', { willReadFrequently: true });
     const selectionBox = document.getElementById('mg-selection-box');
     const PASTEBOARD_MARGIN = 1500;
     const initialBackgroundInput = document.getElementById('initial-background-input');
     const layerInstructions = document.getElementById('layer-instructions');
     const movieCanvas = document.getElementById('mg-movie-canvas');
-    const movieCtx = movieCanvas.getContext('2d');
+    const movieCtx = movieCanvas.getContext('2d', { willReadFrequently: true });
     const downloadImageBtn = document.getElementById('mg-download-image-btn');
     const clearCanvasBtn = document.getElementById('mg-clear-canvas-btn');
     const confirmationOverlay = document.getElementById('mg-confirmation-overlay');
@@ -418,7 +410,7 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
     let eraseBrushPos = { x: 0, y: 0 };
     
     // --- BACKGROUND REMOVAL MODEL INSTANCE ---
-    let remover = null;
+    let bgRemover = null;
 
     const getActiveLayer = () => canvasState.layers.find(l => l.id === activeLayerId);
 
@@ -1196,6 +1188,7 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
         textContentInput.select();
     }
 
+    // --- YOUR CORRECTED, DROP-IN FUNCTION ---
     async function removeBackground() {
         const layer = getActiveLayer();
         if (!layer || layer.type !== 'image') {
@@ -1204,39 +1197,61 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
         }
 
         try {
-            // Lazily load the model on first use
-            if (!remover) {
-                toast('Initializing AI model... (this may take a moment)', null);
-                
-                // --- CORRECTED: Use 'background-removal' pipeline and correct model ID ---
-                remover = await pipeline('background-removal', 'briaai/RMBG-1.4', {
-                    quantized: true,
-                });
+            // Lazily init on first use
+            if (!bgRemover) {
+            toast('Initializing AI model... (this may take a moment)', null);
 
-                toast('Model ready!', 2000);
+            // ✅ use the new package that supports `background-removal`
+            const { pipeline, env, RawImage } = await import(
+                'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0'
+            );
+
+            // make sure we fetch from Hugging Face Hub, not your site
+            env.allowLocalModels = false;
+            env.allowRemoteModels = true;
+
+            // ✅ correct pipeline + model id
+            bgRemover = await pipeline('background-removal', 'briaai/RMBG-1.4', {
+                quantized: true,
+            });
+
+            // keep a reference to helpers for later calls
+            window.__HF_RawImage = RawImage;
+
+            toast('Model ready!', 2000);
             }
 
             toast('Removing background...', null);
 
-            // Perform segmentation on the layer's original image source for best quality
-            const output = await remover(layer.asset);
-            
-            // The result is an object which can be converted to a canvas
-            const resultCanvas = await output.toCanvas();
-            
-            // Update the layer's proxy canvas with the result
-            layer.proxyCanvas.width = resultCanvas.width;
-            layer.proxyCanvas.height = resultCanvas.height;
-            layer.proxyCtx.clearRect(0, 0, layer.proxyCanvas.width, layer.proxyCanvas.height);
-            layer.proxyCtx.drawImage(resultCanvas, 0, 0);
+            // Build the input for the remover (works with an <img> you already loaded)
+            const RawImage = window.__HF_RawImage;
+            const input = await RawImage.fromHTML(layer.asset);
 
-            // Refresh the UI
+            // Run background removal → returns a RawImage (RGBA with alpha)
+            const result = await bgRemover(input);
+
+            // Convert to a canvas and draw onto your layer's proxy canvas
+            const outCanvas = await result.toCanvas();
+
+            // Resize proxy to original (if needed) and draw
+            const w = layer.asset.naturalWidth;
+            const h = layer.asset.naturalHeight;
+            if (layer.proxyCanvas.width !== w || layer.proxyCanvas.height !== h) {
+                layer.proxyCanvas.width = w;
+                layer.proxyCanvas.height = h;
+                // Re-get context after resizing, applying the willReadFrequently hint again
+                layer.proxyCtx = layer.proxyCanvas.getContext('2d', { willReadFrequently: true });
+            }
+
+            layer.proxyCtx.clearRect(0, 0, w, h);
+            layer.proxyCtx.drawImage(outCanvas, 0, 0, w, h);
+
+            // Refresh UI
             drawFrame();
             renderLayerPalette();
-            toast('Background removed!', 3000);
-
-        } catch (error) {
-            console.error('Background removal failed:', error);
+            toast('Background removed!', 2500);
+        } catch (err) {
+            console.error('Background removal failed:', err);
             toast('Error: Could not remove background.', 4000);
         }
     }
