@@ -265,11 +265,13 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
 
 <!-- === SCRIPT IS NOW A MODULE === -->
 <script type="module">
+    // --- CORRECTLY IMPORTING FROM THE CDN ---
     import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1';
 
     // --- GLOBAL CONFIGURATION FOR TRANSFORMERS.JS ---
     // As you correctly pointed out, prevent checks for local models
     env.allowLocalModels = false;
+    env.allowRemoteModels = true; // Be explicit, though it's the default
 
     // --- DEFERRED ASSETS LOGIC ---
     let secondaryFontsLoaded = false;
@@ -416,7 +418,7 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
     let eraseBrushPos = { x: 0, y: 0 };
     
     // --- BACKGROUND REMOVAL MODEL INSTANCE ---
-    let segmenter = null;
+    let remover = null;
 
     const getActiveLayer = () => canvasState.layers.find(l => l.id === activeLayerId);
 
@@ -831,8 +833,10 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
             const proxyCanvas = document.createElement('canvas');
             proxyCanvas.width = w;
             proxyCanvas.height = h;
-            proxyCanvas.getContext('2d').drawImage(img, 0, 0);
-            const newLayer = { id: (Date.now() + Math.random()).toString(), src, asset: img, type: 'image', x: movieCanvas.width / 2, y: movieCanvas.height / 2, size: Math.max(20, movieCanvas.width * 0.25), rot: 0, flipX: false, opacity: 1, brightness: 1, saturation: 1, shadow: { enabled: false, color: '#000000', blur: 10, offsetX: 10, offsetY: 10 }, border: { enabled: false, color: '#FFFFFF', width: 4 }, proxyCanvas, proxyCtx: proxyCanvas.getContext('2d'), undoStack: [], createdAt: Date.now() };
+            // --- FIX: ADD willReadFrequently to context ---
+            const proxyCtx = proxyCanvas.getContext('2d', { willReadFrequently: true });
+            proxyCtx.drawImage(img, 0, 0);
+            const newLayer = { id: (Date.now() + Math.random()).toString(), src, asset: img, type: 'image', x: movieCanvas.width / 2, y: movieCanvas.height / 2, size: Math.max(20, movieCanvas.width * 0.25), rot: 0, flipX: false, opacity: 1, brightness: 1, saturation: 1, shadow: { enabled: false, color: '#000000', blur: 10, offsetX: 10, offsetY: 10 }, border: { enabled: false, color: '#FFFFFF', width: 4 }, proxyCanvas, proxyCtx: proxyCtx, undoStack: [], createdAt: Date.now() };
             canvasState.layers.unshift(newLayer);
             activeLayerId = newLayer.id;
             renderLayerPalette();
@@ -1201,11 +1205,11 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
 
         try {
             // Lazily load the model on first use
-            if (!segmenter) {
+            if (!remover) {
                 toast('Initializing AI model... (this may take a moment)', null);
-
-                // Use the correct, case-sensitive Model ID.
-                segmenter = await pipeline('image-segmentation', 'briaai/RMBG-1.4', {
+                
+                // --- CORRECTED: Use 'background-removal' pipeline and correct model ID ---
+                remover = await pipeline('background-removal', 'briaai/RMBG-1.4', {
                     quantized: true,
                 });
 
@@ -1215,27 +1219,16 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
             toast('Removing background...', null);
 
             // Perform segmentation on the layer's original image source for best quality
-            const output = await segmenter(layer.asset.src, { threshold: 0.5 });
+            const output = await remover(layer.asset);
             
-            // Create a temporary canvas to composite the mask
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            const originalImage = layer.asset;
-            const maskImage = await output.mask.toCanvas();
-
-            tempCanvas.width = originalImage.naturalWidth;
-            tempCanvas.height = originalImage.naturalHeight;
-
-            // Draw the original image
-            tempCtx.drawImage(originalImage, 0, 0);
-
-            // Apply the mask using 'destination-in' to cut out the background
-            tempCtx.globalCompositeOperation = 'destination-in';
-            tempCtx.drawImage(maskImage, 0, 0);
+            // The result is an object which can be converted to a canvas
+            const resultCanvas = await output.toCanvas();
             
             // Update the layer's proxy canvas with the result
+            layer.proxyCanvas.width = resultCanvas.width;
+            layer.proxyCanvas.height = resultCanvas.height;
             layer.proxyCtx.clearRect(0, 0, layer.proxyCanvas.width, layer.proxyCanvas.height);
-            layer.proxyCtx.drawImage(tempCanvas, 0, 0);
+            layer.proxyCtx.drawImage(resultCanvas, 0, 0);
 
             // Refresh the UI
             drawFrame();
