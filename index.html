@@ -408,13 +408,6 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
     let isCanvasViewZoomedOut = false;
     let eraserMode = 'none', isEraserArmed = false;
     let eraseBrushPos = { x: 0, y: 0 };
-    // --- Background remover state (HF Transformers.js) ---
-    let bgRemover = null;      // transformers.js pipeline instance
-    let bgRemoverKind = 'hf';  // flag so you can swap implementations later if needed
-
-    
-    // --- BACKGROUND REMOVAL MODEL INSTANCE ---
-    let bgRemover = null;
 
     const getActiveLayer = () => canvasState.layers.find(l => l.id === activeLayerId);
 
@@ -1408,7 +1401,6 @@ function composeWithAlpha(imageEl, maskCanvas) {
   octx.globalCompositeOperation = 'source-over';
   return out;
 }
-
     function deleteMovieLayer(layerId) {
         canvasState.layers = canvasState.layers.filter(l => l.id !== layerId);
         if (activeLayerId === layerId) { activeLayerId = null; deactivateEraser(); }
