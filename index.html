@@ -1941,7 +1941,7 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
         // ====== Model registry + session cache ======
         const MODELS = {
             fast: './u2netp.onnx',
-            portrait: 'https://huggingface.co/onnx-community/u2net/resolve/main/u2net_human_seg.onnx'
+            portrait: 'https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net_human_seg.onnx'
         };
 
         const sessions = {};
@@ -1957,7 +1957,8 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
             toast(`Loading ${modelName} model...`, null);
 
             try {
-                const ep = (navigator.gpu ? ['webgpu', 'wasm'] : ['wasm']);
+                // --- FIX: Force WASM backend for stability across all models ---
+                const ep = ['wasm']; 
                 sessions[mode] = await ort.InferenceSession.create(url, {
                     executionProviders: ep,
                     graphOptimizationLevel: 'all'
