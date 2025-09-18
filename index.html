@@ -1189,72 +1189,104 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
     }
 
     // --- YOUR CORRECTED, DROP-IN FUNCTION ---
-    async function removeBackground() {
-        const layer = getActiveLayer();
-        if (!layer || layer.type !== 'image') {
-            toast('Please select an image layer first.', 3000);
-            return;
-        }
+    // --- drop-in replacement ---
+async function removeBackground() {
+  const layer = getActiveLayer();
+  if (!layer || layer.type !== 'image') {
+    toast('Please select an image layer first.', 3000);
+    return;
+  }
 
-        try {
-            // Lazily init on first use
-            if (!bgRemover) {
-            toast('Initializing AI model... (this may take a moment)', null);
+  try {
+    if (!bgRemover) {
+      toast('Initializing AI model...', null);
 
-            // ✅ use the new package that supports `background-removal`
-            const { pipeline, env, RawImage } = await import(
-                'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0'
-            );
+      const { pipeline, env, RawImage } = await import(
+        'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0'
+      );
 
-            // make sure we fetch from Hugging Face Hub, not your site
-            env.allowLocalModels = false;
-            env.allowRemoteModels = true;
+      // Ensure we fetch model assets from the Hub
+      env.allowLocalModels = false;
+      env.allowRemoteModels = true;
 
-            // ✅ correct pipeline + model id
-            bgRemover = await pipeline('background-removal', 'briaai/RMBG-1.4', {
-                quantized: true,
-            });
+      // Some browsers need this to avoid CORS/COEP surprises
+      // env.backends.onnx.wasm.proxy = true;
 
-            // keep a reference to helpers for later calls
-            window.__HF_RawImage = RawImage;
+      // Fallback strategy: try background-removal, else image-segmentation
+      let remover;
+      try {
+        remover = await pipeline('background-removal', 'briaai/RMBG-1.4', { quantized: true });
+      } catch {
+        remover = await pipeline('image-segmentation', 'briaai/RMBG-1.4', { quantized: true });
+      }
 
-            toast('Model ready!', 2000);
-            }
-
-            toast('Removing background...', null);
-
-            // Build the input for the remover (works with an <img> you already loaded)
-            const RawImage = window.__HF_RawImage;
-            const input = await RawImage.fromHTML(layer.asset);
-
-            // Run background removal → returns a RawImage (RGBA with alpha)
-            const result = await bgRemover(input);
-
-            // Convert to a canvas and draw onto your layer's proxy canvas
-            const outCanvas = await result.toCanvas();
-
-            // Resize proxy to original (if needed) and draw
-            const w = layer.asset.naturalWidth;
-            const h = layer.asset.naturalHeight;
-            if (layer.proxyCanvas.width !== w || layer.proxyCanvas.height !== h) {
-                layer.proxyCanvas.width = w;
-                layer.proxyCanvas.height = h;
-                // Re-get context after resizing, applying the willReadFrequently hint again
-                layer.proxyCtx = layer.proxyCanvas.getContext('2d', { willReadFrequently: true });
-            }
-
-            layer.proxyCtx.clearRect(0, 0, w, h);
-            layer.proxyCtx.drawImage(outCanvas, 0, 0, w, h);
-
-            // Refresh UI
-            drawFrame();
-            renderLayerPalette();
-            toast('Background removed!', 2500);
-        } catch (err) {
-            console.error('Background removal failed:', err);
-            toast('Error: Could not remove background.', 4000);
-        }
+      bgRemover = remover;
+      window.__HF_RawImage = RawImage;
+      toast('Model ready!', 1200);
     }
+
+    toast('Removing background…', null);
+
+    const RawImage = window.__HF_RawImage;
+    const input = await RawImage.fromHTML(layer.asset);
+    const result = await bgRemover(input);
+
+    // Normalize possible result shapes from different pipelines
+    // Case A: RawImage with alpha (ideal)
+    let outCanvas;
+    if (result && typeof result.toCanvas === 'function') {
+      outCanvas = await result.toCanvas();
+    }
+    // Case B: array of segments with .mask (image-segmentation)
+    else if (Array.isArray(result) && result.length) {
+      // pick the highest-score mask or first available
+      const best = result.slice().sort((a, b) => (b.score ?? 0) - (a.score ?? 0))[0];
+      const maskCanvas = await (best.mask?.toCanvas?.() ?? best.toCanvas?.());
+      // Compose original image + mask → RGBA with transparency
+      outCanvas = composeWithAlpha(layer.asset, maskCanvas);
+    } else {
+      throw new Error('Unexpected model output shape.');
+    }
+
+    // Resize proxy to original and draw the output
+    const w = layer.asset.naturalWidth;
+    const h = layer.asset.naturalHeight;
+    if (layer.proxyCanvas.width !== w || layer.proxyCanvas.height !== h) {
+      layer.proxyCanvas.width = w;
+      layer.proxyCanvas.height = h;
+      layer.proxyCtx = layer.proxyCanvas.getContext('2d', { willReadFrequently: true });
+    }
+    layer.proxyCtx.clearRect(0, 0, w, h);
+    layer.proxyCtx.drawImage(outCanvas, 0, 0, w, h);
+
+    drawFrame();
+    renderLayerPalette();
+    toast('Background removed!', 2000);
+  } catch (err) {
+    console.error('Background removal failed:', err);
+    toast('Error: Could not remove background. See console.', 4000);
+  }
+}
+
+// Helper: combine the original image with a grayscale/alpha mask canvas
+function composeWithAlpha(imageEl, maskCanvas) {
+  const w = imageEl.naturalWidth, h = imageEl.naturalHeight;
+  // Normalize mask size
+  const mask = document.createElement('canvas');
+  mask.width = w; mask.height = h;
+  const mctx = mask.getContext('2d');
+  mctx.drawImage(maskCanvas, 0, 0, w, h);
+
+  // Build RGBA by multiplying original by mask as alpha
+  const out = document.createElement('canvas');
+  out.width = w; out.height = h;
+  const octx = out.getContext('2d');
+  octx.drawImage(imageEl, 0, 0, w, h);
+  octx.globalCompositeOperation = 'destination-in';
+  octx.drawImage(mask, 0, 0); // use mask luminance as alpha
+  octx.globalCompositeOperation = 'source-over';
+  return out;
+}
 
     function deleteMovieLayer(layerId) {
         canvasState.layers = canvasState.layers.filter(l => l.id !== layerId);
