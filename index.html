@@ -266,11 +266,11 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
 
 <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.min.js"></script>
 <script>
-    // Enable fast WASM with SIMD and multiple threads
-    ort.env.wasm.simd = true;
-    ort.env.wasm.numThreads = Math.min(4, navigator.hardwareConcurrency || 2);
-
     (function () {
+        // --- ONNX RUNTIME CONFIG (FIX FOR FLASHING) ---
+        ort.env.wasm.simd = true;
+        ort.env.wasm.numThreads = Math.min(4, navigator.hardwareConcurrency || 2);
+
         // --- DEFERRED ASSETS LOGIC ---
         let secondaryFontsLoaded = false;
         function loadSecondaryFonts() {
@@ -1829,6 +1829,214 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
             textMoveBackBtn.disabled = (idx === canvasState.layers.length - 1);
         }
         
+        // ---- BG remover model sources ----
+        const BG_MODELS = {
+            fast: './u2netp.onnx',
+            portrait: 'https://huggingface.co/smallpp/u2net-human-seg/resolve/main/u2net_human_seg.onnx',
+        };
+
+        const bgSessionCache = new Map();
+
+        async function getBgSession(mode) {
+            if (bgSessionCache.has(mode)) return bgSessionCache.get(mode);
+
+            const url = BG_MODELS[mode] || BG_MODELS.fast;
+            const modelName = mode.charAt(0).toUpperCase() + mode.slice(1);
+            toast(`Loading ${modelName} model...`, null);
+
+            try {
+                const resp = await fetch(url, { mode: 'cors', cache: 'force-cache' });
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const bytes = await resp.arrayBuffer();
+                
+                const session = await ort.InferenceSession.create(bytes, {
+                    executionProviders: ['wasm'],
+                    graphOptimizationLevel: 'all',
+                });
+
+                bgSessionCache.set(mode, session);
+                hideToast();
+                return session;
+
+            } catch (e) {
+                toast(`Couldn’t load ${mode} model. Falling back to Fast.`, 4000);
+                console.error(`Failed to load '${mode}' model from ${url}. Error: ${e.message}`);
+                
+                if (mode !== 'fast') {
+                    const picker = document.getElementById('bg-model');
+                    if (picker) picker.value = 'fast';
+                    localStorage.setItem('bgModel', 'fast');
+                    return await getBgSession('fast');
+                } else {
+                    toast('Critical: Fast model failed to load.', 5000);
+                    throw new Error("Could not load the local fallback model.");
+                }
+            }
+        }
+
+        function rgbaToCHWFloat32(imgData, size = 320) {
+            const { data } = imgData;
+            const chw = new Float32Array(3 * size * size);
+            let p = 0, rOff = 0, gOff = size * size, bOff = 2 * size * size;
+            for (let i = 0; i < data.length; i += 4) {
+                chw[rOff + p] = data[i] / 255;
+                chw[gOff + p] = data[i + 1] / 255;
+                chw[bOff + p] = data[i + 2] / 255;
+                p++;
+            }
+            return chw;
+        }
+
+        function letterboxToSquareBitmap(imgBitmap, size = 320) {
+            const canvas = new OffscreenCanvas(size, size);
+            const ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            const scale = Math.min(size / imgBitmap.width, size / imgBitmap.height);
+            const dw = Math.round(imgBitmap.width * scale);
+            const dh = Math.round(imgBitmap.height * scale);
+            const dx = Math.floor((size - dw) / 2);
+            const dy = Math.floor((size - dh) / 2);
+            ctx.clearRect(0, 0, size, size);
+            ctx.drawImage(imgBitmap, 0, 0, imgBitmap.width, imgBitmap.height, dx, dy, dw, dh);
+            return { canvas, dx, dy, dw, dh };
+        }
+        
+        async function runU2NetOnImageLayer(layer, session) {
+            const bmp = await createImageBitmap(layer.asset);
+            const side = 320;
+            const boxed = letterboxToSquareBitmap(bmp, side);
+            const pctx = boxed.canvas.getContext('2d', { willReadFrequently: true });
+            const imgData = pctx.getImageData(0, 0, side, side);
+            const chw = rgbaToCHWFloat32(imgData, side);
+            const input = new ort.Tensor('float32', chw, [1, 3, side, side]);
+            
+            const feeds = { [session.inputNames[0]]: input };
+            const results = await session.run(feeds);
+            const out = results[session.outputNames[0]].data;
+
+            const maskCanvas = new OffscreenCanvas(side, side);
+            const mctx = maskCanvas.getContext('2d');
+            const mImg = mctx.createImageData(side, side);
+            for (let i = 0; i < out.length; i++) {
+                const a = Math.max(0, Math.min(1, out[i]));
+                const j = i * 4;
+                mImg.data[j] = mImg.data[j+1] = mImg.data[j+2] = 255;
+                mImg.data[j+3] = Math.round(a * 255);
+            }
+            mctx.putImageData(mImg, 0, 0);
+            featherMask(maskCanvas, 1.2);
+            const maskBitmap = await createImageBitmap(maskCanvas);
+
+            const proxy = layer.proxyCanvas;
+            const ctx = layer.proxyCtx;
+            ctx.clearRect(0,0,proxy.width,proxy.height);
+            ctx.drawImage(layer.asset, 0, 0);
+
+            const maskFull = upscaleMaskToLayer(maskBitmap, boxed, proxy.width, proxy.height);
+            ctx.save();
+            ctx.globalCompositeOperation = 'destination-in';
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(maskFull, 0, 0);
+            ctx.restore();
+        }
+
+        async function removeBgForActiveImageLayer() {
+            if (aiToolsDropdown) aiToolsDropdown.classList.remove('visible');
+            
+            const active = getActiveLayer();
+            if (!active || active.type !== 'image') {
+                toast('Select an image layer first.', 2500);
+                return;
+            }
+
+            const picker = document.getElementById('bg-model');
+            const mode = picker ? picker.value : 'fast';
+
+            try {
+                toast(`Loading ${mode} model...`, null);
+                const session = await getBgSession(mode);
+                toast(`Removing background (${mode})...`, null);
+                await runU2NetOnImageLayer(active, session);
+                toast(`Background removed.`, 2500);
+                renderLayerPalette?.();
+                drawFrame?.();
+                updateEraseHistoryButtons?.();
+            } catch (err) {
+                console.error(err);
+                toast('BG removal failed. See console.', 4000);
+            }
+        }
+        
+        function upscaleMaskToLayer(maskBitmap, boxed, layerWidth, layerHeight) {
+            const { dx, dy, dw, dh } = boxed;
+            const tempMaskCanvas = new OffscreenCanvas(maskBitmap.width, maskBitmap.height);
+            tempMaskCanvas.getContext('2d').drawImage(maskBitmap, 0, 0);
+            const croppedMaskCanvas = new OffscreenCanvas(dw, dh);
+            croppedMaskCanvas.getContext('2d').drawImage(tempMaskCanvas, dx, dy, dw, dh, 0, 0, dw, dh);
+            const finalMaskCanvas = new OffscreenCanvas(layerWidth, layerHeight);
+            const finalCtx = finalMaskCanvas.getContext('2d');
+            finalCtx.imageSmoothingEnabled = true;
+            finalCtx.imageSmoothingQuality = 'high';
+            finalCtx.drawImage(croppedMaskCanvas, 0, 0, dw, dh, 0, 0, layerWidth, layerHeight);
+            return finalMaskCanvas;
+        }
+
+        function featherMask(canvas, amount = 1.2) {
+            const ctx = canvas.getContext('2d');
+            if (amount > 0) {
+                ctx.filter = `blur(${amount}px)`;
+                ctx.drawImage(canvas, 0, 0);
+                ctx.filter = 'none';
+            }
+        }
+
+        (function addBgUI() {
+            const panel = document.getElementById('ai-tools-dropdown');
+            if (!panel) return;
+            
+            panel.innerHTML = '<h5>AI Tools</h5>';
+
+            const row = document.createElement('div');
+            row.style.display = 'flex';
+            row.style.gap = '0.5rem';
+            row.style.alignItems = 'center';
+            row.style.marginTop = '0.5rem';
+
+            const sel = document.createElement('select');
+            sel.id = 'bg-model';
+            sel.style.fontFamily = 'inherit';
+            sel.style.fontSize = '16px';
+            sel.style.padding = '8px';
+            sel.style.border = '2px solid var(--ink)';
+            sel.style.background = 'var(--light)';
+            sel.style.color = 'var(--ink)';
+            sel.style.width = 'auto';
+            sel.style.flexShrink = '1';
+            sel.title = "Choose background removal model";
+            sel.innerHTML = `
+                <option value="fast">Fast</option>
+                <option value="portrait">Portrait</option>
+            `;
+            sel.value = localStorage.getItem('bgModel') || 'fast';
+            sel.addEventListener('change', (e) => {
+                localStorage.setItem('bgModel', sel.value);
+                e.stopPropagation();
+            });
+
+            const btn = document.createElement('button');
+            btn.className = 'mg-btn';
+            btn.textContent = 'Remove BG';
+            btn.style.flexGrow = '1';
+            btn.style.margin = '0';
+            btn.addEventListener('click', removeBgForActiveImageLayer);
+
+            row.appendChild(sel);
+            row.appendChild(btn);
+            panel.appendChild(row);
+        })();
+
         const setupEventListeners = () => {
             const versionLink = document.getElementById('version-link');
             const versionPopupOverlay = document.getElementById('version-popup-overlay');
@@ -1935,7 +2143,7 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
             tabAssetsBtn.addEventListener('click', () => setLocalFolderTab('assets'));
             tabBackgroundsBtn.addEventListener('click', () => setLocalFolderTab('backgrounds'));
             eraserSizeMini.addEventListener('input', () => { eraserSizeSlider.value = eraserSizeMini.value; if (eraserZoomCanvas.classList.contains('visible') && lastEraseCanvasPoint) drawEraserZoomAt(lastEraseCanvasPoint); });
-            eraserSizeSlider.addEventListener('input', () => { eraserSizeMini.value = eraserSizeSlider.value; if (eraserZoomCanvas.classList.contains('visible') && lastEraseCanvasPoint) drawEraserZoomAt(lastEraseCanvasPoint); });
+            eraserSizeSlider.addEventListener('input', () => { eraserSizeMini.value = eraserSizeMini.value; if (eraserZoomCanvas.classList.contains('visible') && lastEraseCanvasPoint) drawEraserZoomAt(lastEraseCanvasPoint); });
             eraserStrengthMini.addEventListener('input', () => eraserOpacitySlider.value = eraserStrengthMini.value);
             eraserOpacitySlider.addEventListener('input', () => eraserStrengthMini.value = eraserOpacitySlider.value);
             toggleViewBtn.addEventListener('click', toggleCanvasZoom);
@@ -1943,185 +2151,9 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
             canvasResizeObserver.observe(canvasPanel);
         };
         
-        // ---- BG remover model sources ----
-        const BG_MODELS = {
-            fast: './u2netp.onnx',
-            portrait: 'https://huggingface.co/smallpp/u2net-human-seg/resolve/main/u2net_human_seg.onnx',
-        };
-
-        const bgSessionCache = new Map();
-
-        async function getBgSession(mode) {
-            if (bgSessionCache.has(mode)) return bgSessionCache.get(mode);
-
-            const url = BG_MODELS[mode] || BG_MODELS.fast;
-            const modelName = mode.charAt(0).toUpperCase() + mode.slice(1);
-            toast(`Loading ${modelName} model...`, null);
-
-            try {
-                const resp = await fetch(url, { mode: 'cors', cache: 'default' });
-                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-                const bytes = await resp.arrayBuffer();
-                
-                const session = await ort.InferenceSession.create(bytes, {
-                    executionProviders: ['wasm'],
-                    graphOptimizationLevel: 'all',
-                });
-
-                bgSessionCache.set(mode, session);
-                hideToast();
-                return session;
-
-            } catch (e) {
-                toast(`Couldn’t load ${mode} model. Falling back to Fast.`, 4000);
-                console.error(`Failed to load '${mode}' model from ${url}. Error: ${e.message}`);
-                
-                // If the failed model was not the fast one, try loading the fast one.
-                if (mode !== 'fast') {
-                    document.getElementById('bg-model').value = 'fast'; // Update UI to reflect fallback
-                    return await getBgSession('fast');
-                } else {
-                    // If even the fast model fails, it's a critical error.
-                    toast('Critical: Fast model failed to load.', 5000);
-                    throw new Error("Could not load the local fallback model.");
-                }
-            }
-        }
-
-        async function runU2NetOnImageLayer(layer, session) {
-            const bmp = await createImageBitmap(layer.asset);
-            const side = 320;
-            const boxed = letterboxToSquareBitmap(bmp, side);
-            const pctx = boxed.canvas.getContext('2d', { willReadFrequently: true });
-            const imgData = pctx.getImageData(0, 0, side, side);
-            const chw = rgbaToCHWFloat32(imgData, side);
-            const input = new ort.Tensor('float32', chw, [1, 3, side, side]);
-            
-            const feeds = { [session.inputNames[0]]: input };
-            const results = await session.run(feeds);
-            const out = results[session.outputNames[0]].data;
-
-            const maskCanvas = new OffscreenCanvas(side, side);
-            const mctx = maskCanvas.getContext('2d');
-            const mImg = mctx.createImageData(side, side);
-            for (let i = 0; i < out.length; i++) {
-                const a = Math.max(0, Math.min(1, out[i]));
-                const j = i * 4;
-                mImg.data[j] = mImg.data[j+1] = mImg.data[j+2] = 255;
-                mImg.data[j+3] = Math.round(a * 255);
-            }
-            mctx.putImageData(mImg, 0, 0);
-            featherMask(maskCanvas, 1.2);
-            const maskBitmap = await createImageBitmap(maskCanvas);
-
-            const proxy = layer.proxyCanvas;
-            const ctx = layer.proxyCtx;
-            ctx.clearRect(0,0,proxy.width,proxy.height);
-            ctx.drawImage(layer.asset, 0, 0);
-
-            const maskFull = upscaleMaskToLayer(maskBitmap, boxed, proxy.width, proxy.height);
-            ctx.save();
-            ctx.globalCompositeOperation = 'destination-in';
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-            ctx.drawImage(maskFull, 0, 0);
-            ctx.restore();
-        }
-
-        async function removeBgForActiveImageLayer() {
-            if (aiToolsDropdown) aiToolsDropdown.classList.remove('visible');
-            
-            const active = getActiveLayer();
-            if (!active || active.type !== 'image') {
-                toast('Select an image layer first.', 2500);
-                return;
-            }
-
-            const picker = document.getElementById('bg-model');
-            const mode = picker ? picker.value : 'fast';
-
-            try {
-                const session = await getBgSession(mode);
-                await runU2NetOnImageLayer(active, session);
-                toast(`Background removed (${mode}).`, 2500);
-                renderLayerPalette?.();
-                drawFrame?.();
-                updateEraseHistoryButtons?.();
-            } catch (err) {
-                console.error(err);
-                // The getBgSession function already provides toasts on failure.
-            }
-        }
-        
-        // Helper function to upscale the mask, needed by runU2NetOnImageLayer
-        function upscaleMaskToLayer(maskBitmap, boxed, layerWidth, layerHeight) {
-            const { dx, dy, dw, dh } = boxed;
-            const tempMaskCanvas = new OffscreenCanvas(maskBitmap.width, maskBitmap.height);
-            tempMaskCanvas.getContext('2d').drawImage(maskBitmap, 0, 0);
-            const croppedMaskCanvas = new OffscreenCanvas(dw, dh);
-            croppedMaskCanvas.getContext('2d').drawImage(tempMaskCanvas, dx, dy, dw, dh, 0, 0, dw, dh);
-            const finalMaskCanvas = new OffscreenCanvas(layerWidth, layerHeight);
-            const finalCtx = finalMaskCanvas.getContext('2d');
-            finalCtx.imageSmoothingEnabled = true;
-            finalCtx.imageSmoothingQuality = 'high';
-            finalCtx.drawImage(croppedMaskCanvas, 0, 0, dw, dh, 0, 0, layerWidth, layerHeight);
-            return finalMaskCanvas;
-        }
-
-        // Helper function to feather the mask edges
-        function featherMask(canvas, amount = 1.2) {
-            const ctx = canvas.getContext('2d');
-            if (amount > 0) {
-                ctx.filter = `blur(${amount}px)`;
-                ctx.drawImage(canvas, 0, 0);
-                ctx.filter = 'none';
-            }
-        }
-
-        // ====== UI: Add mode selector + button to AI Tools dropdown ======
-        (function addBgUI() {
-            const panel = document.getElementById('ai-tools-dropdown');
-            if (!panel) return;
-            
-            panel.innerHTML = '<h5>AI Tools</h5>'; // Clear previous content
-
-            const row = document.createElement('div');
-            row.style.display = 'flex';
-            row.style.gap = '0.5rem';
-            row.style.alignItems = 'center';
-            row.style.marginTop = '0.5rem';
-
-            const sel = document.createElement('select');
-            sel.id = 'bg-model';
-            sel.className = 'mg-btn';
-            sel.style.width = 'auto';
-            sel.style.padding = '8px';
-            sel.title = "Choose background removal model";
-            sel.innerHTML = `
-                <option value="fast">Fast (4.7 MB)</option>
-                <option value="portrait">Portrait (176 MB)</option>
-            `;
-            sel.value = localStorage.getItem('bgModel') || 'fast';
-            sel.addEventListener('change', (e) => {
-                localStorage.setItem('bgModel', sel.value);
-                e.stopPropagation();
-            });
-
-            const btn = document.createElement('button');
-            btn.className = 'mg-btn';
-            btn.textContent = 'Remove BG';
-            btn.style.flexGrow = '1';
-            btn.addEventListener('click', removeBgForActiveImageLayer);
-
-            row.appendChild(sel);
-            row.appendChild(btn);
-            panel.appendChild(row);
-        })();
-
-
         async function initialize() {
             const loadingOverlay = document.getElementById('loading-overlay');
-            const minDisplayTime = new Promise(resolve => setTimeout(resolve, 800)); // Lowered for faster perceived load
+            const minDisplayTime = new Promise(resolve => setTimeout(resolve, 800)); 
             const setupPromise = (async () => {
                 injectNonCriticalStyles();
                 populateThemeList();
