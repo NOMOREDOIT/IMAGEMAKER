@@ -1188,7 +1188,7 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
             textContentInput.select();
         }
 
-        async function removeBackground() {
+                async function removeBackground() {
             const layer = getActiveLayer();
             if (!layer || layer.type !== 'image') {
                 toast('Please select an image layer first.', 3000);
@@ -1199,17 +1199,26 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
                 // Lazily load the model on first use
                 if (!segmenter) {
                     toast('Initializing AI model... (this may take a moment)', null);
+                    
                     // Use the dynamic import for transformers.js
-                    const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1');
-                    segmenter = await pipeline('image-segmentation', 'Xenova/briaai-RMBG-1.4', {
+                    const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1');
+
+                    // --- START: THE FIX ---
+                    // 1. As you suggested, prevent the library from looking for a local model copy.
+                    env.allowLocalModels = false;
+
+                    // 2. Use the correct, case-sensitive Model ID.
+                    segmenter = await pipeline('image-segmentation', 'Xenova/BriaAI-RMBG-1.4', {
                         quantized: true,
                     });
+                    // --- END: THE FIX ---
+
                     toast('Model ready!', 2000);
                 }
 
                 toast('Removing background...', null);
 
-                // Perform segmentation
+                // Perform segmentation on the layer's original image source for best quality
                 const output = await segmenter(layer.asset.src, { threshold: 0.5 });
                 
                 // Create a temporary canvas to composite the mask
@@ -1224,7 +1233,7 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
                 // Draw the original image
                 tempCtx.drawImage(originalImage, 0, 0);
 
-                // Apply the mask using 'destination-in'
+                // Apply the mask using 'destination-in' to cut out the background
                 tempCtx.globalCompositeOperation = 'destination-in';
                 tempCtx.drawImage(maskImage, 0, 0);
                 
