@@ -408,6 +408,10 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
     let isCanvasViewZoomedOut = false;
     let eraserMode = 'none', isEraserArmed = false;
     let eraseBrushPos = { x: 0, y: 0 };
+    // --- Background remover state (HF Transformers.js) ---
+    let bgRemover = null;      // transformers.js pipeline instance
+    let bgRemoverKind = 'hf';  // flag so you can swap implementations later if needed
+
     
     // --- BACKGROUND REMOVAL MODEL INSTANCE ---
     let bgRemover = null;
@@ -1189,9 +1193,7 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
     }
 
     // --- YOUR CORRECTED, DROP-IN FUNCTION ---
-    // --- drop-in replacement ---
-let bgRemover = null;            // transformers.js pipeline instance OR 'tfjs'
-let bgRemoverKind = null;        // 'transformers-bg' | 'transformers-seg' | 'tfjs'
+    // --- drop-in replacement --
 
 async function removeBackground() {
   const layer = getActiveLayer();
