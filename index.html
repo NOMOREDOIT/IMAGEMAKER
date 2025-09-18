@@ -1939,7 +1939,7 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
 
         async function ensureU2Net() {
           if (u2netSession) return u2netSession;
-          toast('Loading AI model (first time only)...', null);
+          toast('Loading model (first time only)...', null);
           try {
             u2netSession = await ort.InferenceSession.create(U2NET_MODEL_URL, {
                 executionProviders: ['wasm'],
