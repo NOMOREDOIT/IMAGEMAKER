@@ -131,6 +131,68 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
 .mg-overlay-base{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1000;display:flex;align-items:center;justify-content:center;opacity:1;pointer-events:auto;} /* Simplified for example */
 #canvas-placeholder { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
 .placeholder-text { color: var(--shadow); }
+
+/* AI Model Selector Styles */
+#ai-model-select {
+  position: relative;
+}
+#ai-model-trigger {
+  background: var(--bg);
+  border: 1px solid var(--ink);
+  padding: 4px 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color .3s, border-color .3s;
+}
+#ai-model-trigger:focus, #ai-model-select.open #ai-model-trigger {
+  border-color: var(--action-color);
+}
+#ai-model-trigger span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#ai-model-trigger i {
+  transition: transform .2s ease-in-out;
+  font-size: .8em;
+  margin-left: 0.5rem;
+}
+#ai-model-select.open #ai-model-trigger i {
+  transform: rotate(180deg);
+}
+#ai-model-dropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  background: var(--light);
+  border: 1px solid var(--ink);
+  z-index: 101;
+  box-shadow: 2px 2px 0 var(--shadow);
+}
+#ai-model-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+#ai-model-list li {
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background-color .2s;
+  white-space: nowrap;
+  font-size: .9rem;
+}
+#ai-model-list li:hover {
+  background-color: var(--mid);
+}
+#ai-model-list li.selected {
+  background-color: var(--action-color);
+  color: var(--light);
+}
+
 /* === INTEGRATED DROPDOWN STYLES END === */
 </style>
 </head>
@@ -175,7 +237,7 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
             </div>
         </div>
     </div>
-    <button id="erase-tool-btn">Erase</button><div id="erase-tool-dropdown"><h5>Eraser Tool</h5><div class=eraser-mode-selector><button class="mg-btn" id=erase-btn>Erase</button><button class="mg-btn" id=unerase-btn>Unerase</button></div><div id="eraser-controls-wrapper" class="disabled"><h6>Brush Settings</h6><div class="slider-container"><label for="eraser-size">Brush Size</label><input type="range" id="eraser-size" min="5" max="200" value="40"></div><div class="slider-container"><label for="eraser-opacity">Strength</label><input type="range" id="eraser-opacity" min="0" max="1" step=".01" value="1"></div><h6>History</h6><button class="mg-btn" id="undo-erase-btn" disabled>Undo</button><button class="mg-btn" id="revert-erasing-btn">Reset Layer</button></div></div><button id="ai-tools-btn">AI Tools</button><div id="ai-tools-dropdown"><h5>AI Tools</h5></div><button id=text-btn>Text</button><div id=text-dropdown><h5>Text Editor</h5><div id=text-layer-manager><div id=text-layer-palette></div><button id=add-new-text-layer-btn class="palette-slot empty" title="Add new text layer">+</button></div><div id=text-visuals-controls class=disabled><div class=slider-container><label for=text-content>Text Content</label><textarea id=text-content rows=3 style=width:100%;font-family:inherit;font-size:1rem;padding:4px;border:1px solid var(--ink);background:var(--bg)>New Text</textarea></div>
+    <button id="erase-tool-btn">Erase</button><div id="erase-tool-dropdown"><h5>Eraser Tool</h5><div class=eraser-mode-selector><button class="mg-btn" id=erase-btn>Erase</button><button class="mg-btn" id=unerase-btn>Unerase</button></div><div id="eraser-controls-wrapper" class="disabled"><h6>Brush Settings</h6><div class="slider-container"><label for="eraser-size">Brush Size</label><input type="range" id="eraser-size" min="5" max="200" value="40"></div><div class="slider-container"><label for="eraser-opacity">Strength</label><input type="range" id="eraser-opacity" min="0" max="1" step=".01" value="1"></div><h6>History</h6><button class="mg-btn" id="undo-erase-btn" disabled>Undo</button><button class="mg-btn" id="revert-erasing-btn">Reset Layer</button></div></div><button id="ai-tools-btn">BG Remover.exe</button><div id="ai-tools-dropdown"><h5>BG Remover</h5></div><button id=text-btn>Text</button><div id=text-dropdown><h5>Text Editor</h5><div id=text-layer-manager><div id=text-layer-palette></div><button id=add-new-text-layer-btn class="palette-slot empty" title="Add new text layer">+</button></div><div id=text-visuals-controls class=disabled><div class=slider-container><label for=text-content>Text Content</label><textarea id=text-content rows=3 style=width:100%;font-family:inherit;font-size:1rem;padding:4px;border:1px solid var(--ink);background:var(--bg)>New Text</textarea></div>
         <div class="slider-container">
             <label>Font</label>
             <div id="custom-font-select">
@@ -269,7 +331,7 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
     (function () {
         // --- ONNX RUNTIME CONFIG ---
         ort.env.wasm.simd = true;
-        ort.env.wasm.numThreads = 1; // Use single-thread for max compatibility (GitHub Pages)
+        ort.env.wasm.numThreads = 1; // Use single-thread for max compatibility
 
         // --- DEFERRED ASSETS LOGIC ---
         let secondaryFontsLoaded = false;
@@ -1880,8 +1942,8 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
                 console.error(`Failed to load '${mode}' model from ${url}. Error: ${e.message}`);
                 
                 if (mode !== 'fast') {
-                    const picker = document.getElementById('bg-model');
-                    if (picker) picker.value = 'fast';
+                    const picker = document.getElementById('ai-model-trigger')?.querySelector('span');
+                    if(picker) picker.textContent = "Fast (General)";
                     localStorage.setItem('bgModel', 'fast');
                     return await getBgSession('fast');
                 } else {
@@ -1968,8 +2030,7 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
                 return;
             }
 
-            const picker = document.getElementById('bg-model');
-            const mode = picker ? picker.value : 'fast';
+            const mode = localStorage.getItem('bgModel') || 'fast';
 
             try {
                 const session = await getBgSession(mode);
@@ -2018,45 +2079,70 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
             const panel = document.getElementById('ai-tools-dropdown');
             if (!panel) return;
             
-            panel.innerHTML = '<h5>AI Tools</h5>';
+            panel.innerHTML = `<h5>AI Tools</h5><h6 style="text-align: center; margin-bottom: 0.8rem; font-weight: normal;">Select a model below</h6>`;
 
-            const row = document.createElement('div');
-            row.style.display = 'flex';
-            row.style.gap = '0.5rem';
-            row.style.alignItems = 'center';
-            row.style.marginTop = '0.5rem';
+            const customSelect = document.createElement('div');
+            customSelect.id = 'ai-model-select';
+            customSelect.style.position = 'relative';
 
-            const sel = document.createElement('select');
-            sel.id = 'bg-model';
-            sel.style.fontFamily = 'inherit';
-            sel.style.fontSize = '16px';
-            sel.style.padding = '8px';
-            sel.style.border = '2px solid var(--ink)';
-            sel.style.background = 'var(--light)';
-            sel.style.color = 'var(--ink)';
-            sel.style.width = 'auto';
-            sel.style.flexShrink = '1';
-            sel.title = "Choose background removal model";
-            sel.innerHTML = `
-                <option value="fast">Fast</option>
-                <option value="portrait">Portrait</option>
+            const trigger = document.createElement('div');
+            trigger.id = 'ai-model-trigger';
+            trigger.tabIndex = 0;
+            trigger.innerHTML = `<span></span> <i class="fas fa-chevron-down"></i>`;
+
+            const dropdown = document.createElement('div');
+            dropdown.id = 'ai-model-dropdown';
+            dropdown.classList.add('hidden');
+
+            const list = document.createElement('ul');
+            list.id = 'ai-model-list';
+            list.innerHTML = `
+                <li data-value="fast">Fast (General)</li>
+                <li data-value="portrait">Portrait (Detailed)</li>
             `;
-            sel.value = localStorage.getItem('bgModel') || 'fast';
-            sel.addEventListener('change', (e) => {
-                localStorage.setItem('bgModel', sel.value);
-                e.stopPropagation();
-            });
+
+            dropdown.appendChild(list);
+            customSelect.appendChild(trigger);
+            customSelect.appendChild(dropdown);
 
             const btn = document.createElement('button');
             btn.className = 'mg-btn';
-            btn.textContent = 'Remove BG';
-            btn.style.flexGrow = '1';
-            btn.style.margin = '0';
+            btn.textContent = 'Remove Background';
+            btn.style.marginTop = '0.5rem';
             btn.addEventListener('click', removeBgForActiveImageLayer);
+            
+            panel.appendChild(customSelect);
+            panel.appendChild(btn);
 
-            row.appendChild(sel);
-            row.appendChild(btn);
-            panel.appendChild(row);
+            const triggerText = trigger.querySelector('span');
+
+            function updateTriggerText(mode) {
+                const text = mode === 'fast' ? 'Fast (General)' : 'Portrait (Detailed)';
+                triggerText.textContent = text;
+                list.querySelector('.selected')?.classList.remove('selected');
+                const liToSelect = list.querySelector(`[data-value="${mode}"]`);
+                if (liToSelect) liToSelect.classList.add('selected');
+            }
+
+            updateTriggerText(localStorage.getItem('bgModel') || 'fast');
+
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                customSelect.classList.toggle('open');
+                dropdown.classList.toggle('hidden');
+            });
+
+            list.querySelectorAll('li').forEach(li => {
+                li.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const newMode = e.currentTarget.dataset.value;
+                    localStorage.setItem('bgModel', newMode);
+                    updateTriggerText(newMode);
+                    customSelect.classList.remove('open');
+                    dropdown.classList.add('hidden');
+                    toast(`Switched to ${newMode === 'fast' ? 'Fast' : 'Portrait'} model`, 1600);
+                });
+            });
         })();
 
         const setupEventListeners = () => {
@@ -2157,6 +2243,11 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
                 const clickedOnEraserUI = eraseToolBtn.contains(e.target) || eraseToolDropdown.contains(e.target) || eraserHud.contains(e.target);
                 if (eraserMode !== 'none' && !canvasPanel.contains(e.target) && !clickedOnEraserUI) { deactivateEraser(); }
                 if (!customFontSelect.contains(e.target)) { closeFontDropdown(); }
+                const aiModelSelect = document.getElementById('ai-model-select');
+                if (aiModelSelect && !aiModelSelect.contains(e.target)) {
+                    aiModelSelect.classList.remove('open');
+                    aiModelSelect.querySelector('#ai-model-dropdown').classList.add('hidden');
+                }
                 popups.forEach(p => { if (!p.button.contains(e.target) && !p.dropdown.contains(e.target)) { if (p.dropdown.id === 'erase-tool-dropdown' && p.dropdown.classList.contains('visible') && eraserMode !== 'none' && !isEraserArmed) { isEraserArmed = true; showEraserHUD(true); updateEraserHudState(); movieCanvas.classList.add('erase-cursor'); const toastMsg = `${eraserMode==='erase'?'Erase':'Unerase'} Mode Activated. Click away from the layer to deactivate.`; toast(toastMsg, null); } p.dropdown.classList.remove('visible'); } });
             });
             viewAllLocalAssetsBtn.addEventListener('click', () => { renderFullLocalAssetFolder_IDB(); setLocalFolderTab('assets'); localAssetFolderOverlay.classList.add('visible'); });
