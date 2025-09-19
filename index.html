@@ -2013,23 +2013,10 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
             return { canvas, dx, dy, dw, dh };
         }
         
-        function getExpectedSquareSide(session, requestedSide) {
-            try {
-                const name = session.inputNames[0];
-                const dims = session.inputMetadata?.[name]?.dimensions || [];
-                const h = Number(dims[2]);
-                const w = Number(dims[3]);
-                if (Number.isFinite(h) && Number.isFinite(w) && h > 0 && w > 0 && h === w) {
-                    return h; // model has a fixed square size (e.g., 320)
-                }
-            } catch {}
-            return requestedSide; // dynamic/unknown: use what we asked for
-        }
-        
         async function runU2NetOnImageLayer(layer, session, mode = 'fast') {
-            // ask for 512 on Portrait, 320 on Fast, but obey model’s declared size if fixed
-            const requested = (mode === 'portrait') ? 512 : 320;
-            const side = getExpectedSquareSide(session, requested);
+            // CORRECTED: Both current models expect a fixed 320x320 input.
+            // The dynamic check was failing, so we revert to the correct static size.
+            const side = 320;
 
             const bmp = await createImageBitmap(layer.asset);
             const boxed = letterboxToSquareBitmap(bmp, side);
