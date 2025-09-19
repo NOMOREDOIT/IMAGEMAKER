@@ -285,10 +285,10 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
     <div class="footer-right"><a href="#" id="border-style-link"><i class="fas fa-border-style"></i><span id="current-border-style-name"></span></a><a href="#" id="theme-select-link"><i class="fas fa-palette"></i><span id="current-theme-name"></span></a><a href="#" id="version-link"><i class="fas fa-code-branch"></i>v4.18.1</a></div>
 </footer>
 <input type=file id=initial-background-input accept=image/* style=display:none></div>
-<div id=mg-asset-library-overlay class=mg-overlay-base><div id=mg-asset-picker-grid-wrapper class=window><button id=mg-asset-library-close class=overlay-close-btn>X</button><h4>Click an asset to add it to the canvas</h4><div id=mg-asset-picker-grid></div><div id=mg-asset-picker-actions><label class=mg-btn>Upload Custom <input type=file id=mg-asset-picker-file accept=image/* style=display:none></label></div></div></div>
-<div id=mg-local-asset-folder-overlay class=mg-overlay-base><div id=mg-local-asset-folder-wrapper class=window><button id=mg-local-asset-folder-close class=overlay-close-btn>X</button><h4>Your Library</h4><div id="mg-local-asset-tabs" style="display:flex;gap:.5rem;justify-content:center;margin-bottom:.5rem;"><button id="tab-assets" class="mg-btn tab" type="button">Assets</button><button id="tab-backgrounds" class="mg-btn tab" type="button">Backgrounds</button></div><div id="mg-local-asset-grid-assets"></div><div id="mg-local-asset-grid-backgrounds" class="hidden"></div></div></div>
-<div id=mg-confirmation-overlay class=mg-overlay-base><div id=mg-confirmation-dialog class=window><p id=mg-confirmation-text>Are you sure?</p><div class=action-buttons><button id="mg-confirm-yes-btn" class="mg-btn active" type="button">Yes</button><button id="mg-confirm-no-btn" class="mg-btn" type="button">No</button></div></div></div>
-<div id="mg-asset-action-overlay" class=mg-overlay-base><div id="mg-asset-action-dialog" class=window><p>How would you like to use this asset?</p><div class="action-buttons"><button id="mg-asset-action-background-btn" class="mg-btn">Set as Background</button><button id="mg-asset-action-layer-btn" class="mg-btn">Add as Layer</button></div></div></div>
+<div id=mg-asset-library-overlay class="mg-overlay-base" style="display: none;"><div id=mg-asset-picker-grid-wrapper class=window><button id=mg-asset-library-close class=overlay-close-btn>X</button><h4>Click an asset to add it to the canvas</h4><div id=mg-asset-picker-grid></div><div id=mg-asset-picker-actions><label class=mg-btn>Upload Custom <input type=file id=mg-asset-picker-file accept=image/* style=display:none></label></div></div></div>
+<div id=mg-local-asset-folder-overlay class="mg-overlay-base" style="display: none;"><div id=mg-local-asset-folder-wrapper class=window><button id=mg-local-asset-folder-close class=overlay-close-btn>X</button><h4>Your Library</h4><div id="mg-local-asset-tabs" style="display:flex;gap:.5rem;justify-content:center;margin-bottom:.5rem;"><button id="tab-assets" class="mg-btn tab" type="button">Assets</button><button id="tab-backgrounds" class="mg-btn tab" type="button">Backgrounds</button></div><div id="mg-local-asset-grid-assets"></div><div id="mg-local-asset-grid-backgrounds" class="hidden"></div></div></div>
+<div id=mg-confirmation-overlay class="mg-overlay-base" style="display: none;"><div id=mg-confirmation-dialog class=window><p id=mg-confirmation-text>Are you sure?</p><div class=action-buttons><button id="mg-confirm-yes-btn" class="mg-btn active" type="button">Yes</button><button id="mg-confirm-no-btn" class="mg-btn" type="button">No</button></div></div></div>
+<div id="mg-asset-action-overlay" class="mg-overlay-base" style="display: none;"><div id="mg-asset-action-dialog" class=window><p>How would you like to use this asset?</p><div class="action-buttons"><button id="mg-asset-action-background-btn" class="mg-btn">Set as Background</button><button id="mg-asset-action-layer-btn" class="mg-btn">Add as Layer</button></div></div></div>
 <div id="version-popup-overlay" style="display: none;">
     <div id="version-popup-content">
         <span id="close-popup">X</span>
@@ -1942,7 +1942,7 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
         // ---- BG remover model sources ----
         const BG_MODELS = {
             fast: './u2netp.onnx',
-            portrait: 'https://huggingface.co/smallpp/u2net-human-seg/resolve/main/u2net_human_seg.onnx',
+            portrait: 'https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net_human_seg.onnx',
         };
 
         const bgSessionCache = new Map();
@@ -2070,72 +2070,18 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
 
                 toast(`Removing background`, null);
                 await new Promise(resolve => setTimeout(resolve, 50));
-                
-                const originalAssetBitmap = await createImageBitmap(active.asset);
+
                 await runU2NetOnImageLayer(active, session);
                 
-                drawFrame();
-                animateBgRemoval(active, originalAssetBitmap);
-                renderLayerPalette?.();
-                updateEraseHistoryButtons?.();
-                
                 toast(`Background removed.`, 2500);
-
+                renderLayerPalette?.();
+                drawFrame?.();
+                updateEraseHistoryButtons?.();
             } catch (err) {
                 console.error(err);
                 hideToast();
                 toast('BG removal failed. See console.', 4000);
             }
-        }
-
-        function animateBgRemoval(layer, originalBitmap) {
-            const duration = 400; // ms
-            const overlay = controlsOverlayCanvas;
-            const octx = controlsCtx;
-
-            const bgCanvas = new OffscreenCanvas(originalBitmap.width, originalBitmap.height);
-            const bgCtx = bgCanvas.getContext('2d');
-            bgCtx.drawImage(originalBitmap, 0, 0);
-            bgCtx.globalCompositeOperation = 'destination-out';
-            bgCtx.drawImage(layer.proxyCanvas, 0, 0);
-
-            const glowCanvas = new OffscreenCanvas(originalBitmap.width, originalBitmap.height);
-            const glowCtx = glowCanvas.getContext('2d');
-            glowCtx.filter = 'drop-shadow(0 0 4px #0f0) drop-shadow(0 0 8px #0f0)';
-            glowCtx.drawImage(layer.proxyCanvas, 0, 0);
-            
-            let startTime = null;
-            function animationFrame(time) {
-                if (!startTime) startTime = time;
-                const elapsed = time - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                
-                const easeOut = 1 - Math.pow(1 - progress, 3);
-                const {dWidth, dHeight} = getLayerMetrics(layer);
-                const slideDistance = easeOut * (movieCanvas.height / (dHeight/movieCanvas.height));
-
-                octx.clearRect(0, 0, overlay.width, overlay.height);
-
-                octx.save();
-                octx.translate(layer.x, layer.y);
-                octx.rotate(layer.rot * Math.PI / 180);
-                if (layer.flipX) octx.scale(-1, 1);
-                
-                octx.save();
-                octx.translate(0, slideDistance);
-                octx.drawImage(bgCanvas, -dWidth/2, -dHeight/2, dWidth, dHeight);
-                octx.drawImage(glowCanvas, -dWidth/2, -dHeight/2, dWidth, dHeight);
-                octx.restore();
-
-                octx.restore();
-
-                if (progress < 1) {
-                    requestAnimationFrame(animationFrame);
-                } else {
-                    octx.clearRect(0, 0, overlay.width, overlay.height);
-                }
-            }
-            requestAnimationFrame(animationFrame);
         }
         
         function upscaleMaskToLayer(maskBitmap, boxed, layerWidth, layerHeight) {
