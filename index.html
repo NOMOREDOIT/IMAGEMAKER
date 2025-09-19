@@ -175,7 +175,7 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
             </div>
         </div>
     </div>
-    <button id="erase-tool-btn">Erase</button><div id="erase-tool-dropdown"><h5>Eraser Tool</h5><div class=eraser-mode-selector><button class="mg-btn" id=erase-btn>Erase</button><button class="mg-btn" id=unerase-btn>Unerase</button></div><div id="eraser-controls-wrapper" class="disabled"><h6>Brush Settings</h6><div class="slider-container"><label for="eraser-size">Brush Size</label><input type="range" id="eraser-size" min="5" max="200" value="40"></div><div class="slider-container"><label for="eraser-opacity">Strength</label><input type="range" id="eraser-opacity" min="0" max="1" step=".01" value="1"></div><h6>History</h6><button class="mg-btn" id="undo-erase-btn" disabled>Undo</button><button class="mg-btn" id="revert-erasing-btn">Reset Layer</button></div></div><button id="ai-tools-btn">BG Remover</button><div id="ai-tools-dropdown"><h5>BG Remover</h5></div><button id=text-btn>Text</button><div id=text-dropdown><h5>Text Editor</h5><div id=text-layer-manager><div id=text-layer-palette></div><button id=add-new-text-layer-btn class="palette-slot empty" title="Add new text layer">+</button></div><div id=text-visuals-controls class=disabled><div class=slider-container><label for=text-content>Text Content</label><textarea id=text-content rows=3 style=width:100%;font-family:inherit;font-size:1rem;padding:4px;border:1px solid var(--ink);background:var(--bg)>New Text</textarea></div>
+    <button id="erase-tool-btn">Erase</button><div id="erase-tool-dropdown"><h5>Eraser Tool</h5><div class=eraser-mode-selector><button class="mg-btn" id=erase-btn>Erase</button><button class="mg-btn" id=unerase-btn>Unerase</button></div><div id="eraser-controls-wrapper" class="disabled"><h6>Brush Settings</h6><div class="slider-container"><label for="eraser-size">Brush Size</label><input type="range" id="eraser-size" min="5" max="200" value="40"></div><div class="slider-container"><label for="eraser-opacity">Strength</label><input type="range" id="eraser-opacity" min="0" max="1" step=".01" value="1"></div><h6>History</h6><button class="mg-btn" id="undo-erase-btn" disabled>Undo</button><button class="mg-btn" id="revert-erasing-btn">Reset Layer</button></div></div><button id="ai-tools-btn">AI Tools</button><div id="ai-tools-dropdown"><h5>AI Tools</h5></div><button id=text-btn>Text</button><div id=text-dropdown><h5>Text Editor</h5><div id=text-layer-manager><div id=text-layer-palette></div><button id=add-new-text-layer-btn class="palette-slot empty" title="Add new text layer">+</button></div><div id=text-visuals-controls class=disabled><div class=slider-container><label for=text-content>Text Content</label><textarea id=text-content rows=3 style=width:100%;font-family:inherit;font-size:1rem;padding:4px;border:1px solid var(--ink);background:var(--bg)>New Text</textarea></div>
         <div class="slider-container">
             <label>Font</label>
             <div id="custom-font-select">
@@ -267,9 +267,9 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
 <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.min.js"></script>
 <script>
     (function () {
-        // --- ONNX RUNTIME CONFIG (FIX FOR FLASHING) ---
+        // --- ONNX RUNTIME CONFIG ---
         ort.env.wasm.simd = true;
-        ort.env.wasm.numThreads = Math.min(4, navigator.hardwareConcurrency || 2);
+        ort.env.wasm.numThreads = 1; // Use single-thread for max compatibility (GitHub Pages)
 
         // --- DEFERRED ASSETS LOGIC ---
         let secondaryFontsLoaded = false;
@@ -402,6 +402,7 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
         const eraserStrengthMini = document.getElementById('mg-eraser-strength-mini');
         
         let toastTimeout;
+        let toastAnimationInterval = null;
         const toastEl = document.getElementById('mg-toast');
         
         let canvasState = { backgroundElement: null, backgroundType: 'none', bgBrightness: 1, bgSaturation: 1, layers: [] };
@@ -532,15 +533,30 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
         // --- APP LOGIC ---
         function toast(message, duration = 3000) {
             if (!toastEl) return;
+            clearTimeout(toastTimeout);
+            clearInterval(toastAnimationInterval);
             toastEl.textContent = message;
             toastEl.style.visibility = 'visible';
-            clearTimeout(toastTimeout);
-            if (duration !== null) { toastTimeout = setTimeout(() => { toastEl.style.visibility = 'hidden'; }, duration); }
+            if (duration === null) {
+                let dotCount = 1;
+                const baseMessage = message;
+                toastAnimationInterval = setInterval(() => {
+                    const dots = '.'.repeat(dotCount);
+                    toastEl.textContent = baseMessage + dots;
+                    dotCount = (dotCount % 3) + 1;
+                }, 400);
+            } else {
+                toastTimeout = setTimeout(() => {
+                    toastEl.style.visibility = 'hidden';
+                    clearInterval(toastAnimationInterval);
+                }, duration);
+            }
         }
 
         function hideToast() {
             if (!toastEl) return;
             clearTimeout(toastTimeout);
+            clearInterval(toastAnimationInterval);
             toastEl.style.visibility = 'hidden';
         }
 
@@ -1842,7 +1858,7 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
 
             const url = BG_MODELS[mode] || BG_MODELS.fast;
             const modelName = mode.charAt(0).toUpperCase() + mode.slice(1);
-            toast(`Loading ${modelName} model...`, null);
+            toast(`Loading ${modelName} model`, null);
 
             try {
                 const resp = await fetch(url, { mode: 'cors', cache: 'force-cache' });
@@ -1859,6 +1875,7 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
                 return session;
 
             } catch (e) {
+                hideToast();
                 toast(`Couldn’t load ${mode} model. Falling back to Fast.`, 4000);
                 console.error(`Failed to load '${mode}' model from ${url}. Error: ${e.message}`);
                 
@@ -1955,16 +1972,21 @@ footer a:hover{opacity:1}footer a i{margin-right:.5em}
             const mode = picker ? picker.value : 'fast';
 
             try {
-                toast(`Loading ${mode} model...`, null);
                 const session = await getBgSession(mode);
-                toast(`Removing background (${mode})...`, null);
+                if (!session) return; 
+
+                toast(`Removing background`, null);
+                await new Promise(resolve => setTimeout(resolve, 50));
+
                 await runU2NetOnImageLayer(active, session);
+                
                 toast(`Background removed.`, 2500);
                 renderLayerPalette?.();
                 drawFrame?.();
                 updateEraseHistoryButtons?.();
             } catch (err) {
                 console.error(err);
+                hideToast();
                 toast('BG removal failed. See console.', 4000);
             }
         }
